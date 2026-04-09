@@ -74,7 +74,19 @@ images/
         ├── ...
         └── YYYYMMDD-2300.jpg
 ```
+##  Workflow Configuration
 
+The pipeline is implemented using a scheduled GitHub Actions workflow:
+
+- Defined in: `.github/workflows/webcam.yml`
+- Runtime environment: `ubuntu-latest` with Python 3.10
+
+The workflow automates:
+
+- Running the image scraping script (`webcam_download.py`)
+- Managing dependencies (`requests`, `beautifulsoup4`)
+
+Sensitive credentials (e.g., rclone configuration) are securely stored using GitHub Secrets (`RCLONE_CONF`).
 
 # 02 EEA PM2.5 Downloader – Milan Monitoring Station
 
