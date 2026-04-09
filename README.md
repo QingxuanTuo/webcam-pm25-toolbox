@@ -1,52 +1,82 @@
-# air-quality-thesis pipeline（自动数据采集 pipeline）
+# 01 Webcam-Based Air Quality Data Collection Pipeline
 
-## 流程概览
+This project automatically collects **webcam images from Milan** and stores them in Google Drive.  
+The dataset will be used for air quality research, particularly **PM2.5 estimation based on image data**.
 
-GitHub server<br>
-↓<br>
-每天 UTC 02:00（≈ 米兰 03:00）<br>
-↓<br>
-运行 webcam_download.py<br>
-↓<br>
-抓取 Milan webcam<br>
-↓<br>
-保存到 images/<br>
-↓<br>
-rclone 上传到 Google Drive
+---
 
-## 建议每周检查一次
+## Pipeline Overview
 
-### A. GitHub Actions 是否成功
+```text
+GitHub Actions (scheduled workflow)
+        ↓
+Runs daily at 02:00 UTC (≈ 03:00 Milan time)
+        ↓
+Execute webcam_download.py
+        ↓
+Scrape Milan webcam images
+        ↓
+Save to local images/ directory
+        ↓
+Upload to Google Drive via rclone
+```
+---
 
-进入 **GitHub → Actions**
+## Data Source
 
-如果最近的运行结果都是 **Success**，说明系统正常。
+- Website: https://www.meteogiuliacci.it/meteo-webcam/webcam-milano  
+- Data type: Hourly webcam images of Milan
 
-### B. Google Drive 数据是否增加
+---
 
-打开 Google Drive 对应文件夹。
+## Core Script
 
-每天应该会新增 **一个文件夹**（或新增对应日期的数据）。
+**webcam_download.py** This script is responsible for automatically scraping and saving webcam images.
 
-### C. 图片数量是否正常
+### Main functionalities:
 
-如果某天只有几张图片，可能是网站某些小时没有更新。  
-属于正常波动，但需要留意是否持续发生。
+- Extract image URLs containing `"hour"`
+- Download images via `requests`
+- Rename images based on date and hour
 
-## 什么时候开始真正做分析
+---
+##  Automation & Monitoring
 
-建议等到至少 **1–2 个月的数据量** 再开始分析。
+To ensure the pipeline runs correctly, it is recommended to perform regular checks:
 
-## 后续分析步骤
+### 1. GitHub Actions Status
 
-1. 图像特征提取  
-2. 与 PM2.5 station 数据匹配  
-3. 加入 ERA5 气象变量  
-4. 训练 ML / DL 模型
+Navigate to: GitHub → Actions
+
+Verify that recent workflow runs are marked as: **Success**
+
+This indicates that the automated data collection is functioning properly.
+
+---
+
+### 2. Google Drive Data Integrity
+
+Check the corresponding Google Drive folder and ensure that:
+
+- A new folder is generated each day
+- Each folder contains multiple images (typically around 20 images per day)
+
+Consistent data updates confirm that the pipeline is operating as expected.
+
+## Data Storage Structure
+
+```text
+images/
+└── DD_MM_YYYY/
+    └── giuliacci/
+        ├── YYYYMMDD-0400.jpg
+        ├── YYYYMMDD-0500.jpg
+        ├── ...
+        └── YYYYMMDD-2300.jpg
+```
 
 
-
-# EEA PM2.5 Downloader – Milan Monitoring Station
+# 02 EEA PM2.5 Downloader – Milan Monitoring Station
 
 ## Overview
 
