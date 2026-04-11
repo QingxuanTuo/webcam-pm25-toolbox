@@ -173,6 +173,133 @@ The `Start` column represents the start time of each hourly measurement interval
 1. Open `eea_pm25_downloader.ipynb`
 2. Modify the time range in the parameter section:
 
-```python
-api_start = "YYYY-MM-DDTHH:MM:SSZ"
-api_end   = "YYYY-MM-DDTHH:MM:SSZ"
+        api_start = "YYYY-MM-DDTHH:MM:SSZ"
+        api_end   = "YYYY-MM-DDTHH:MM:SSZ"
+
+
+# 03 ERA5 Meteorological Data Collection and Processing
+
+## Overview
+
+This module provides a complete workflow for downloading, processing, and integrating meteorological data from ERA5 reanalysis datasets.
+
+The purpose of this step is to generate a clean, analysis-ready dataset that complements webcam imagery and PM2.5 observations, enabling more robust air quality modelling.
+
+Two ERA5 datasets are used:
+
+- ERA5 single levels reanalysis  
+- ERA5 pressure levels reanalysis  
+
+These datasets together provide both **surface-level conditions** and **upper-air atmospheric structure**.
+
+---
+
+## Data Source
+
+Data are obtained from the Copernicus Climate Data Store (CDS):
+
+https://cds.climate.copernicus.eu/
+
+### Dataset 1 – ERA5 Single Levels
+
+- Data type: Hourly time series (point-based)  
+- Location: Milan (user-defined coordinates)  
+
+Selected variables:
+
+- 2m temperature (T2M)  
+- 10m u-component of wind (U10)  
+- 10m v-component of wind (V10)  
+- Surface pressure (SP)  
+- Total precipitation (TP)  
+- Boundary layer height (BLH)  
+
+These variables describe **local meteorological conditions affecting PM2.5 dispersion and accumulation**.
+
+---
+
+### Dataset 2 – ERA5 Pressure Levels
+
+- Data type: Hourly gridded data  
+
+Selected pressure levels:
+
+- 850 hPa (lower atmosphere)  
+- 500 hPa (mid-troposphere)  
+
+Selected variables:
+
+- Temperature (T)  
+- U-component of wind (U)  
+- V-component of wind (V)  
+- Geopotential (GP)  
+
+These variables represent **large-scale atmospheric dynamics and stability**, which influence pollution transport and vertical mixing.
+
+---
+
+## Workflow Description
+
+The ERA5 processing pipeline consists of the following steps:
+
+### Step 1 – Data Download
+
+Data are retrieved using the CDS API:
+
+- Single-level data are downloaded as CSV files (time series at a specific location)  
+- Pressure-level data are downloaded as NetCDF files (multi-dimensional gridded data)  
+
+---
+
+### Step 2 – Data Extraction
+
+- ZIP archives are automatically extracted  
+- Relevant files are identified:  
+
+  - CSV for single-level data  
+  - NetCDF for pressure-level data  
+
+---
+
+### Step 3 – Data Preprocessing
+
+**Single-Level Data**
+
+- Convert timestamps to standard datetime format  
+- Remove timezone information  
+- Rename variables to concise names (e.g., T2M, U10)  
+- Select relevant columns  
+
+---
+
+**Pressure-Level Data**
+
+- Read NetCDF files using `xarray`  
+- Aggregate spatial grid values (average over ROI)  
+- Convert from long format to wide format  
+- Generate derived variables:
+T_500, U_500, V_500, GP_500
+T_850, U_850, V_850, GP_850
+
+---
+
+### Step 4 – Data Integration
+
+- Merge single-level and pressure-level datasets using the time column  
+- Ensure consistent timestamp format:
+YYYY-MM-DD HH:MM:SS
+
+
+---
+
+## Input and Output
+
+### Input
+
+- ERA5 single-level CSV data (downloaded automatically)  
+- ERA5 pressure-level NetCDF data (downloaded automatically)  
+
+---
+
+### Output
+era5_all_merged.csv
