@@ -212,7 +212,10 @@ Selected variables:
 - 10m v-component of wind (V10)  
 - Surface pressure (SP)  
 - Total precipitation (TP)  
-- Boundary layer height (BLH)  
+- Boundary layer height (BLH)
+- 2m dewpoint temperature (D2M) 
+- Total Cloud Cover (TCC) 
+- Cloud Base Height (CBH) 
 
 These variables describe **local meteorological conditions affecting PM2.5 dispersion and accumulation**.
 
@@ -237,6 +240,17 @@ Selected variables:
 These variables represent **large-scale atmospheric dynamics and stability**, which influence pollution transport and vertical mixing.
 
 ---
+### Additional Meteorological Variables
+
+- Relative Humidity (RH)
+
+Relative humidity is not directly provided in the selected ERA5 time-series dataset. Therefore, it is derived from temperature (T2M) and dew point temperature (D2M) using the following formulation:
+
+- Temperature is converted from Kelvin to Celsius
+- Relative humidity is calculated using the August–Roche–Magnus approximation
+
+RH is an important variable because it affects aerosol hygroscopic growth and is strongly related to haze formation and visibility conditions.
+
 
 ## Workflow Description
 
@@ -372,12 +386,16 @@ The merged dataset includes the following variables:
 
 ### ERA5 Surface Variables
 - T2M (2m temperature)
+- D2M (2m dewpoint temperature)
+- RH (Relative Humidity)
 - U10 (10m u wind component)
 - V10 (10m v wind component)
 - SP (surface pressure)
 - TP (total precipitation)
 - BLH (boundary layer height)
-
+- TCC (Total Cloud Cover) 
+- CBH (Cloud Base Height)
+  
 ### ERA5 Pressure-Level Variables
 - GP_500, GP_850 (geopotential)
 - T_500, T_850 (temperature)
