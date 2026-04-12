@@ -303,3 +303,90 @@ YYYY-MM-DD HH:MM:SS
 
 ### Output
 era5_all_merged.csv
+
+# 04 Data Integration: PM2.5 and ERA5 Dataset
+
+## Overview
+
+This step integrates the PM2.5 air quality data with ERA5 meteorological data to produce a unified, analysis-ready dataset. The merged dataset will be used for subsequent modelling tasks, including the estimation of PM2.5 concentrations from webcam imagery.
+
+---
+
+## Input Data
+
+The integration step uses the following datasets:
+
+- PM2.5 dataset (EEA):
+  - `PM25_MI_hourly.csv`
+- ERA5 meteorological dataset:
+  - `era5_all_merged.csv`
+
+---
+
+## Temporal Alignment
+
+PM2.5 measurements are reported as hourly intervals with a **Start** and **End** time:
+Start → End
+
+
+In this project, the **Start timestamp is used for alignment** with ERA5 data.
+
+Reason:
+
+- ERA5 data are provided at hourly resolution
+- The Start time represents the beginning of the measurement interval
+- Using Start ensures consistent temporal matching between datasets
+
+---
+
+## Workflow Description
+
+The integration process performs the following steps:
+
+1. Load PM2.5 and ERA5 datasets
+2. Convert timestamps to a consistent datetime format
+3. Align datasets based on the hourly timestamp
+4. Extract relevant PM2.5 fields (Value, Unit)
+5. Merge PM2.5 data with ERA5 variables
+6. Export the final merged dataset
+
+---
+
+## Output
+
+The final dataset is saved as:
+pm25_era5_merged.csv
+
+
+This dataset contains both air quality observations and meteorological variables, and is ready for machine learning and analysis.
+
+---
+
+## Features
+
+The merged dataset includes the following variables:
+
+### PM2.5 Variables
+- Value (PM2.5 concentration)
+- Unit
+
+### ERA5 Surface Variables
+- T2M (2m temperature)
+- U10 (10m u wind component)
+- V10 (10m v wind component)
+- SP (surface pressure)
+- TP (total precipitation)
+- BLH (boundary layer height)
+
+### ERA5 Pressure-Level Variables
+- GP_500, GP_850 (geopotential)
+- T_500, T_850 (temperature)
+- U_500, U_850 (wind u-component)
+- V_500, V_850 (wind v-component)
+
+---
+
+## Script
+
+The integration is implemented in the following script:
+merge_pm25_era5.py
