@@ -109,7 +109,6 @@ def process_single_csv(csv_path: Path) -> pd.DataFrame:
 
     df["time"] = pd.to_datetime(df["valid_time"]).dt.tz_localize(None)
 
-    # 同时兼容长名和短名
     rename_map = {
         "2m_temperature": "T2M",
         "2m_dewpoint_temperature": "D2M",
