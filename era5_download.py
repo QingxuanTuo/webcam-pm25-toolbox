@@ -37,11 +37,14 @@ FINAL_CSV = OUT_DIR / "era5_all_merged.csv"
 
 SINGLE_VARS = [
     "2m_temperature",
+    "2m_dewpoint_temperature",
     "10m_u_component_of_wind",
     "10m_v_component_of_wind",
     "surface_pressure",
     "total_precipitation",
     "boundary_layer_height",
+    "total_cloud_cover",
+    "cloud_base_height",
 ]
 
 # pressure-level: 500 and 850 hPa
@@ -108,33 +111,62 @@ def process_single_csv(csv_path: Path) -> pd.DataFrame:
 
     # 同时兼容长名和短名
     rename_map = {
-        # long names
         "2m_temperature": "T2M",
+        "2m_dewpoint_temperature": "D2M",
         "10m_u_component_of_wind": "U10",
         "10m_v_component_of_wind": "V10",
         "surface_pressure": "SP",
         "total_precipitation": "TP",
         "boundary_layer_height": "BLH",
+        "total_cloud_cover": "TCC",
+        "cloud_base_height": "CBH",
 
-        # short names
         "t2m": "T2M",
+        "d2m": "D2M",
         "u10": "U10",
         "v10": "V10",
         "sp": "SP",
         "tp": "TP",
         "blh": "BLH",
+        "tcc": "TCC",
+        "cbh": "CBH",
     }
 
     df = df.rename(columns=rename_map)
 
-    # 可选：加一个风速
+
+    if {"T2M", "D2M"}.issubset(df.columns):
+        t_c = df["T2M"] - 273.15
+        td_c = df["D2M"] - 273.15
+
+        df["RH"] = 100.0 * np.exp(
+            (17.625 * td_c) / (243.04 + td_c)
+            - (17.625 * t_c) / (243.04 + t_c)
+        )
+
+
+        df["RH"] = df["RH"].clip(lower=0, upper=100)
+
     if {"U10", "V10"}.issubset(df.columns):
         df["WS10"] = np.sqrt(df["U10"] ** 2 + df["V10"] ** 2)
 
     drop_cols = [c for c in ["valid_time", "latitude", "longitude"] if c in df.columns]
     df = df.drop(columns=drop_cols)
 
-    keep_cols = ["time", "T2M", "U10", "V10", "SP", "TP", "BLH"]
+    keep_cols = [
+        "time",
+        "T2M",
+        "D2M",
+        "RH",
+        "U10",
+        "V10",
+        "SP",
+        "TP",
+        "BLH",
+        "TCC",
+        "CBH",
+    ]
+
     keep_cols = [c for c in keep_cols if c in df.columns]
 
     out = df[keep_cols].sort_values("time").reset_index(drop=True)
