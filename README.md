@@ -408,3 +408,75 @@ The merged dataset includes the following variables:
 
 The integration is implemented in the following script:
 merge_pm25_era5.py
+
+# 05 Visual Comparison & ROI Exploration
+
+This notebook provides an interactive tool for comparing two webcam images using a **swipe overlay**. It is designed for visual inspection of image differences under different dates or times and supports manual **ROI (Region of Interest)** exploration.
+
+The notebook allows users to:
+
+- select two images from a local folder
+- crop the same ROI from both images
+- compare them interactively with a horizontal or vertical swipe
+- switch between multiple visualization modes
+- visually inspect the selected ROI on the original full images
+
+This tool is mainly intended for:
+
+- exploratory image comparison
+- ROI selection
+- qualitative assessment of haze / visibility differences
+- preparation for later feature extraction
+
+## Main Features
+
+### 1. Interactive image comparison
+Two images can be selected from a folder and compared using a swipe overlay.
+
+### 2. ROI cropping
+The same ROI is applied to both images using:
+
+- `top`
+- `left`
+- `height`
+- `width`
+
+### 3. Multiple visualization modes
+The notebook supports the following display modes:
+
+- **RGB** — overall color and brightness
+- **HSV** — HSV visualized back in RGB space
+- **Saturation** — degree of color intensity / greyness
+- **R** — red channel
+- **G** — green channel
+- **B** — blue channel
+- **B/R** — blue-to-red ratio, useful for atmospheric scattering analysis
+
+### 4. Swipe overlay
+Comparison can be displayed using:
+
+- **Horizontal swipe**
+- **Vertical swipe**
+
+The swipe position can be adjusted interactively.
+
+### 5. ROI verification on original images
+The notebook also shows the selected ROI as a red rectangle on the original full images, making it easier to verify whether the cropped region is appropriate.
+
+### 6. Current ROI output
+The notebook prints the currently selected ROI parameters for easy recording and reuse.
+
+## Requirements
+
+All required Python packages for this notebook are listed in `requirements.txt`, including:
+
+- `numpy`
+- `imageio`
+- `matplotlib`
+- `ipywidgets`
+
+Install them with:
+
+```bash
+pip install -r requirements.txt
+
