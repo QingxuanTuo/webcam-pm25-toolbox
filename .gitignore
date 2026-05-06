@@ -13,3 +13,5 @@ outputs/figures/*
 
 outputs/tables/*
 !outputs/tables/.gitkeep
+
+data/raw/pm25/downloads_milano/*

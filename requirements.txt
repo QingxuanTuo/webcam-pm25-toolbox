@@ -7,3 +7,4 @@ xarray
 netCDF4
 cdsapi
 requests
+pyarrow
