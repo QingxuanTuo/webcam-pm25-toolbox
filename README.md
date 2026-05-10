@@ -539,58 +539,67 @@ wind_gust_max
 
 # 07 Data Integration and Preprocessing
 
-To construct a unified dataset for analysis, multiple data sources are integrated and preprocessed.
+To construct a unified dataset for air pollution analysis and modeling, multiple data sources are temporally aligned, integrated, and preprocessed. The final dataset combines air pollution indicators, ground-based meteorological observations, atmospheric reanalysis variables, and image-derived visual features for subsequent analysis, feature exploration, and predictive modeling.
 
 ### 1 Multi-source Data Integration
 
-The ARPA meteorological data are further combined with air quality and reanalysis datasets:
+The final dataset integrates the following three categories of data:
 
-- Align time column names:
-  - ARPA dataset: `Data-Ora`
-  - External dataset: `time`
+- **ARPA Ground-based Meteorological Observations (`arpa_merged.csv`)**  
+  This dataset is collected from ARPA Lombardia meteorological monitoring stations and contains local surface meteorological observations, including temperature, humidity, precipitation, wind speed, wind direction, solar radiation, and wind gust information. These variables are used to describe near-surface atmospheric conditions.
 
-- Convert both columns to a unified datetime format  
+- **PM2.5 and ERA5 Reanalysis Data (`pm25_era5_merged.csv`)**  
+  This dataset contains PM2.5 concentration measurements together with ERA5 meteorological reanalysis variables. It is used to represent both air pollution levels and large-scale atmospheric background conditions. ERA5 variables provide additional information about boundary layer dynamics, wind fields, temperature fields, and geopotential structures at different pressure levels.
 
-- Perform an **inner join**:
+- **Image ROI Feature Data (`image_feature_roi.csv`)**  
+  This dataset contains visual features extracted from the Region of Interest (ROI) in environmental images. Extracted features include RGB color statistics, saturation-related features, color ratios, and image contrast, which may provide complementary information related to atmospheric visibility and environmental conditions.
 
-pd.merge(arpa, meteo, on="time", how="inner")
-
-
-Only timestamps present in both datasets are retained.
+All datasets are aligned using a unified timestamp and merged using an **inner join**, ensuring that only timestamps simultaneously present in all three datasets are retained in the final dataset.
 
 ### 2 Final Dataset Structure
 
-The merged dataset contains three main categories of information:
+The final merged dataset contains four major categories of information:
 
-- **Air Pollution Indicator (PM2.5)**  
-  Represents the concentration of fine particulate matter near the surface (unit: μg/m³).  
-  It is used as the **target variable** in this study to describe air pollution levels.
+- **Air Pollution Indicators (PM2.5)**  
+  Represent the concentration of fine particulate matter near the surface and are used as the target variable for pollution analysis and prediction.
 
-- **Ground-based Meteorological Observations (ARPA)**  
-  Collected from ARPA Lombardia monitoring stations, these variables describe local near-surface atmospheric conditions, including:
-  - precipitation_cumulative (cumulative precipitation)
-  - temperature_mean (air temperature)
-  - wind_direction_mean (wind direction)
-  - relative_humidity_mean (relative humidity)
-  - global_radiation_mean (solar radiation)
-  - wind_speed_mean (average wind speed)
-  - wind_gust_max (maximum wind gust)
+- **ERA5 Meteorological Reanalysis Variables**  
+  Describe large-scale atmospheric background conditions and vertical atmospheric structures, including:
+  - T2M
+  - U10 / V10
+  - SP
+  - TP
+  - BLH
+  - GP_500 / GP_850
+  - T_500 / T_850
+  - U_500 / U_850
+  - V_500 / V_850
 
-- **Meteorological Reanalysis Variables**  
-  Provide large-scale atmospheric background and vertical structure information, complementing ground observations. These include:
-  - T2M: temperature at 2 meters  
-  - U10 / V10: wind components at 10 meters  
-  - SP: surface pressure  
-  - TP: total precipitation  
-  - BLH: boundary layer height  
-  - GP_500 / GP_850: geopotential height at 500 hPa / 850 hPa  
-  - T_500 / T_850: temperature at 500 hPa / 850 hPa  
-  - U_500 / U_850: zonal wind components (upper levels)  
-  - V_500 / V_850: meridional wind components (upper levels)  
+- **ARPA Ground-based Meteorological Variables**  
+  Including:
+  - precipitation_cumulative
+  - temperature_mean
+  - wind_direction_mean
+  - relative_humidity_mean
+  - global_radiation_mean
+  - wind_speed_mean
+  - wind_gust_max
 
-These three data sources are temporally aligned and integrated into a multivariate time-series dataset, which jointly captures:
+- **Image-derived ROI Visual Features**  
+  Including:
+  - R_roi
+  - G_roi
+  - B_roi
+  - S_mean
+  - B_R_ratio
+  - contrast
+  - image_path
 
-- Air pollution levels (PM2.5)  
-- Local meteorological conditions (ground observations)  
-- Large-scale atmospheric dynamics and transport processes (reanalysis data)  
+The integrated dataset forms a unified multivariate time-series dataset capable of simultaneously representing:
 
+- Air pollution level variations
+- Local surface meteorological conditions
+- Large-scale atmospheric environmental characteristics
+- Image-based visual environmental information
+
+This dataset provides a comprehensive foundation for subsequent air pollution prediction, feature importance analysis, and GeoInformatics-related research.
