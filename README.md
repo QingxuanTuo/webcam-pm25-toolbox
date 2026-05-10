@@ -480,3 +480,128 @@ Install them with:
 ```bash
 pip install -r requirements.txt
 
+# 06 ARPA Meteorological Data Source and Acquisition
+
+The ground-based meteorological data used in this project are obtained from the official platform of ARPA Lombardia (Regional Environmental Protection Agency of Lombardy):
+
+https://www.arpalombardia.it/temi-ambientali/meteo-e-clima/form-richiesta-dati
+
+## 6.1 Data Retrieval
+
+Data are downloaded via the ARPA online request form with the following configuration:
+
+- **Station**: Milano - v. Juvara  
+- **Time range**: consistent with the study period  
+- **Temporal resolution**: Oraria (hourly)  
+
+## 6.2 Selected Variables
+
+The following meteorological variables relevant to air pollution analysis are selected:
+
+| Variable | Description | Output Field |
+|----------|------------|--------------|
+| Precipitazione | Precipitation | Valore Cumulato |
+| Temperatura | Temperature | Medio |
+| Direzione Vento | Wind Direction | Medio |
+| Umidità Relativa | Relative Humidity | Medio |
+| Radiazione Globale | Global Radiation | Medio |
+| Velocità Vento | Wind Speed | Medio |
+| Raffica Velocità Vento | Wind Gust | Massimo |
+
+## 6.3 Data Characteristics
+
+The ARPA dataset presents the following characteristics:
+
+- Each variable is exported as a **separate CSV file**  
+- The time column is labeled as `Data-Ora`  
+- Data are provided as **hourly time series**  
+- Missing values are encoded as `-999`  
+- Wind speed and wind gust share the same `Id Sensore` (19242) and must be distinguished by the field:
+  - `Medio` → average wind speed  
+  - `Massimo` → wind gust (maximum)  
+
+
+# 07 Data Integration and Preprocessing
+
+To construct a unified dataset for analysis, multiple data sources are integrated and preprocessed.
+
+## 7.1 ARPA Data Merging
+
+Since ARPA data are stored separately by variable, a horizontal merge is required:
+
+- Use `Data-Ora` as the primary key  
+- Perform time-aligned merging (outer join) across the 7 CSV files  
+- Rename variables using consistent semantic naming:
+
+precipitation_cumulative
+temperature_mean
+wind_direction_mean
+relative_humidity_mean
+global_radiation_mean
+wind_speed_mean
+wind_gust_max
+
+
+- Replace invalid values (`-999`) with missing values (`NaN`)
+
+## 7.2 Multi-source Data Integration
+
+The ARPA meteorological data are further combined with air quality and reanalysis datasets:
+
+- Align time column names:
+  - ARPA dataset: `Data-Ora`
+  - External dataset: `time`
+
+- Convert both columns to a unified datetime format  
+
+- Perform an **inner join**:
+
+pd.merge(arpa, meteo, on="time", how="inner")
+
+
+Only timestamps present in both datasets are retained.
+
+## 7.3 Final Dataset Structure
+
+The merged dataset contains three main categories of information:
+
+- **Air Pollution Indicator (PM2.5)**  
+  Represents the concentration of fine particulate matter near the surface (unit: μg/m³).  
+  It is used as the **target variable** in this study to describe air pollution levels.
+
+- **Ground-based Meteorological Observations (ARPA)**  
+  Collected from ARPA Lombardia monitoring stations, these variables describe local near-surface atmospheric conditions, including:
+  - precipitation_cumulative (cumulative precipitation)
+  - temperature_mean (air temperature)
+  - wind_direction_mean (wind direction)
+  - relative_humidity_mean (relative humidity)
+  - global_radiation_mean (solar radiation)
+  - wind_speed_mean (average wind speed)
+  - wind_gust_max (maximum wind gust)
+
+- **Meteorological Reanalysis Variables**  
+  Provide large-scale atmospheric background and vertical structure information, complementing ground observations. These include:
+  - T2M: temperature at 2 meters  
+  - U10 / V10: wind components at 10 meters  
+  - SP: surface pressure  
+  - TP: total precipitation  
+  - BLH: boundary layer height  
+  - GP_500 / GP_850: geopotential height at 500 hPa / 850 hPa  
+  - T_500 / T_850: temperature at 500 hPa / 850 hPa  
+  - U_500 / U_850: zonal wind components (upper levels)  
+  - V_500 / V_850: meridional wind components (upper levels)  
+
+These three data sources are temporally aligned and integrated into a multivariate time-series dataset, which jointly captures:
+
+- Air pollution levels (PM2.5)  
+- Local meteorological conditions (ground observations)  
+- Large-scale atmospheric dynamics and transport processes (reanalysis data)  
+
+## 7.4 Applications
+
+The resulting dataset can be directly used for:
+
+- Time series analysis  
+- PM2.5 prediction modeling  
+- Feature importance analysis  
+- GeoInformatics / GIS-based studies  
