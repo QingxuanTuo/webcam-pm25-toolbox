@@ -479,6 +479,7 @@ Install them with:
 
 ```bash
 pip install -r requirements.txt
+```
 
 # 06 ARPA Meteorological Data Source and Acquisition
 
@@ -486,7 +487,7 @@ The ground-based meteorological data used in this project are obtained from the 
 
 https://www.arpalombardia.it/temi-ambientali/meteo-e-clima/form-richiesta-dati
 
-## 6.1 Data Retrieval
+### 1 Data Retrieval
 
 Data are downloaded via the ARPA online request form with the following configuration:
 
@@ -494,7 +495,7 @@ Data are downloaded via the ARPA online request form with the following configur
 - **Time range**: consistent with the study period  
 - **Temporal resolution**: Oraria (hourly)  
 
-## 6.2 Selected Variables
+### 2 Selected Variables
 
 The following meteorological variables relevant to air pollution analysis are selected:
 
@@ -508,7 +509,7 @@ The following meteorological variables relevant to air pollution analysis are se
 | Velocità Vento | Wind Speed | Medio |
 | Raffica Velocità Vento | Wind Gust | Massimo |
 
-## 6.3 Data Characteristics
+### 3 Data Characteristics
 
 The ARPA dataset presents the following characteristics:
 
@@ -518,14 +519,9 @@ The ARPA dataset presents the following characteristics:
 - Missing values are encoded as `-999`  
 - Wind speed and wind gust share the same `Id Sensore` (19242) and must be distinguished by the field:
   - `Medio` → average wind speed  
-  - `Massimo` → wind gust (maximum)  
-
-
-# 07 Data Integration and Preprocessing
-
-To construct a unified dataset for analysis, multiple data sources are integrated and preprocessed.
-
-## 7.1 ARPA Data Merging
+  - `Massimo` → wind gust (maximum)
+  - 
+### 4 ARPA Data Merging
 
 Since ARPA data are stored separately by variable, a horizontal merge is required:
 
@@ -541,10 +537,11 @@ global_radiation_mean
 wind_speed_mean
 wind_gust_max
 
+# 07 Data Integration and Preprocessing
 
-- Replace invalid values (`-999`) with missing values (`NaN`)
+To construct a unified dataset for analysis, multiple data sources are integrated and preprocessed.
 
-## 7.2 Multi-source Data Integration
+### 1 Multi-source Data Integration
 
 The ARPA meteorological data are further combined with air quality and reanalysis datasets:
 
@@ -561,7 +558,7 @@ pd.merge(arpa, meteo, on="time", how="inner")
 
 Only timestamps present in both datasets are retained.
 
-## 7.3 Final Dataset Structure
+### 2 Final Dataset Structure
 
 The merged dataset contains three main categories of information:
 
@@ -597,11 +594,3 @@ These three data sources are temporally aligned and integrated into a multivaria
 - Local meteorological conditions (ground observations)  
 - Large-scale atmospheric dynamics and transport processes (reanalysis data)  
 
-## 7.4 Applications
-
-The resulting dataset can be directly used for:
-
-- Time series analysis  
-- PM2.5 prediction modeling  
-- Feature importance analysis  
-- GeoInformatics / GIS-based studies  
