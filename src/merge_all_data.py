@@ -1,81 +1,142 @@
-import pandas as pd
 from functools import reduce
+from pathlib import Path
 
-# 1. Read the three datasets
-arpa = pd.read_csv("arpa_merged.csv")
-image_features = pd.read_csv("image_feature_roi.csv")
-era5_pm25 = pd.read_csv("pm25_era5_merged.csv")
+import pandas as pd
 
-# 2. Remove extra spaces from column names
-arpa.columns = arpa.columns.str.strip()
-image_features.columns = image_features.columns.str.strip()
-era5_pm25.columns = era5_pm25.columns.str.strip()
 
-# 3. Rename ARPA time column to "time"
-arpa = arpa.rename(columns={"Data-Ora": "time"})
+def merge_all_datasets(
+    arpa_file,
+    image_file,
+    pm25_file,
+    era5_file,
+    output_file,
+    arpa_time_column="Data-Ora",
+    pm25_time_column="Start",
+    pm25_value_column="Value",
+    pm25_unit_column="Unit",
+    image_date_column="date",
+    image_hour_column="hour",
+):
+    arpa = pd.read_csv(arpa_file)
+    image_features = pd.read_csv(image_file)
+    pm25 = pd.read_csv(pm25_file)
+    era5 = pd.read_csv(era5_file)
 
-# 4. Combine date and hour columns into a single datetime column
-image_features["time"] = pd.to_datetime(
-    image_features["date"].astype(str) + " " + image_features["hour"].astype(str)
-)
+    for df in [arpa, image_features, pm25, era5]:
+        df.columns = df.columns.str.strip()
 
-# 5. Convert time columns to datetime format
-arpa["time"] = pd.to_datetime(arpa["time"])
-era5_pm25["time"] = pd.to_datetime(era5_pm25["time"])
+    pm25[pm25_time_column] = pd.to_datetime(pm25[pm25_time_column])
 
-# 6. Remove original date and hour columns from image features dataset
-image_features = image_features.drop(columns=["date", "hour"])
+    pm25_selected = pm25[
+        [
+            pm25_time_column,
+            pm25_value_column,
+            pm25_unit_column,
+        ]
+    ].copy()
 
-# 7. Keep only timestamps existing in all three datasets
-merged_all = reduce(
-    lambda left, right: pd.merge(left, right, on="time", how="inner"),
-    [image_features, era5_pm25, arpa]
-)
+    pm25_selected = pm25_selected.rename(
+        columns={
+            pm25_time_column: "time",
+            pm25_value_column: "PM25",
+            pm25_unit_column: "Unit",
+        }
+    )
 
-# 8. Sort the merged dataset by time
-merged_all = merged_all.sort_values("time")
+    era5["time"] = pd.to_datetime(era5["time"])
 
-# 9. Define the final column order
-column_order = [
-    "time",
-    "R_roi",
-    "G_roi",
-    "B_roi",
-    "S_mean",
-    "B_R_ratio",
-    "contrast",
-    "image_path",
-    "PM25",
-    "Unit",
-    "T2M",
-    "U10",
-    "V10",
-    "SP",
-    "TP",
-    "BLH",
-    "GP_500",
-    "GP_850",
-    "T_500",
-    "T_850",
-    "U_500",
-    "U_850",
-    "V_500",
-    "V_850",
-    "precipitation_cumulative",
-    "temperature_mean",
-    "wind_direction_mean",
-    "relative_humidity_mean",
-    "global_radiation_mean",
-    "wind_speed_mean",
-    "wind_gust_max"
-]
+    era5_pm25 = pd.merge(
+        era5,
+        pm25_selected,
+        on="time",
+        how="inner",
+    )
 
-# 10. Reorder columns according to the specified order
-merged_all = merged_all[column_order]
+    arpa = arpa.rename(columns={arpa_time_column: "time"})
+    arpa["time"] = pd.to_datetime(arpa["time"])
 
-# 11. Save the final merged dataset
-merged_all.to_csv("final_merged_all.csv", index=False)
+    image_features["time"] = pd.to_datetime(
+        image_features[image_date_column].astype(str)
+        + " "
+        + image_features[image_hour_column].astype(str)
+    )
 
-# 12. Print preview and total number of rows
-print(merged_all.head())
-print("Final rows:", len(merged_all))
+    image_features = image_features.drop(
+        columns=[
+            image_date_column,
+            image_hour_column,
+        ]
+    )
+
+    merged_all = reduce(
+        lambda left, right: pd.merge(
+            left,
+            right,
+            on="time",
+            how="inner",
+        ),
+        [image_features, era5_pm25, arpa],
+    )
+
+    merged_all = merged_all.sort_values("time").reset_index(drop=True)
+
+    column_order = [
+        "time",
+        "R_roi",
+        "G_roi",
+        "B_roi",
+        "S_mean",
+        "B_R_ratio",
+        "contrast",
+        "image_path",
+        "PM25",
+        "Unit",
+        "T2M",
+        "D2M",
+        "RH",
+        "U10",
+        "V10",
+        "SP",
+        "TP",
+        "BLH",
+        "TCC",
+        "CBH",
+        "WS10",
+        "GP_500",
+        "GP_850",
+        "T_500",
+        "T_850",
+        "U_500",
+        "U_850",
+        "V_500",
+        "V_850",
+        "temperature_mean",
+        "wind_direction_mean",
+        "relative_humidity_mean",
+        "wind_speed_mean",
+        "wind_gust_max",
+    ]
+
+    existing_cols = [
+        c for c in column_order
+        if c in merged_all.columns
+    ]
+
+    other_cols = [
+        c for c in merged_all.columns
+        if c not in existing_cols
+    ]
+
+    merged_all = merged_all[existing_cols + other_cols]
+
+    output_file = Path(output_file)
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+
+    merged_all.to_csv(output_file, index=False)
+
+    print(f"Saved: {output_file}")
+    print("Final rows:", len(merged_all))
+    print("Final shape:", merged_all.shape)
+    print(merged_all.head())
+
+    return merged_all
