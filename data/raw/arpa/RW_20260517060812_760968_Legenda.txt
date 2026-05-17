@@ -1,0 +1,19 @@
+﻿Legenda
+-999 Valore mancante o invalido
+Legenda dei valori speciali
+Valore, Descrizione
+777,calma
+7777,calma
+888,variabile
+8888,variabile
+Nota: i gradi di Direzione del Vento sono riferiti al Nord
+
+Riepilogo estrazione
+Id_Stazione,Nome_Stazione,Id_Sensore,Nome_Sensore,Unita_Misura,Periodo_Dal,Periodo_Al,Operatore
+501,Milano v.Marche,5911,Temperatura,°C,2026/01/01 00:00,2026/05/16 00:00,Medio
+501,Milano v.Marche,5911,Temperatura,°C,2026/01/01 00:00,2026/05/16 00:00,Gradi Giorno
+501,Milano v.Marche,6048,Direzione Vento,°,2026/01/01 00:00,2026/05/16 00:00,Medio
+501,Milano v.Marche,6597,Umidità Relativa,%,2026/01/01 00:00,2026/05/16 00:00,Medio
+501,Milano v.Marche,19019,Velocità Vento,m/s,2026/01/01 00:00,2026/05/16 00:00,Medio
+501,Milano v.Marche,19019,Velocità Vento,m/s,2026/01/01 00:00,2026/05/16 00:00,Massimo
+I dati sono estratti in ORA SOLARE (UTC + 1)
