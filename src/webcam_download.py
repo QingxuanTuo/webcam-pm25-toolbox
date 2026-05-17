@@ -12,14 +12,12 @@ import os
 from bs4 import BeautifulSoup
 from datetime import datetime, date, timedelta
 
-folder_path = "images"
+folder_path = "webcam_MI_2026"
 os.makedirs(folder_path, exist_ok=True)
 
 def save_images_giugliacci(image_sources, base_url, folder_name):
     current_date = date.today() - timedelta(days=1)
-    current_date_str = current_date.strftime("%d_%m_%Y")
-
-    save_folder = os.path.join(folder_path, current_date_str, folder_name)
+    save_folder = folder_path
     os.makedirs(save_folder, exist_ok=True)
 
     for source in image_sources:

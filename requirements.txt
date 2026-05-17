@@ -8,3 +8,4 @@ netCDF4
 cdsapi
 requests
 pyarrow
+beautifulsoup4
