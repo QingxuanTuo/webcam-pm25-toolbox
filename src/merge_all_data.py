@@ -14,8 +14,7 @@ def merge_all_datasets(
     pm25_time_column="Start",
     pm25_value_column="Value",
     pm25_unit_column="Unit",
-    image_date_column="date",
-    image_hour_column="hour",
+    image_time_column="datetime",
 ):
     arpa = pd.read_csv(arpa_file)
     image_features = pd.read_csv(image_file)
@@ -55,18 +54,8 @@ def merge_all_datasets(
     arpa = arpa.rename(columns={arpa_time_column: "time"})
     arpa["time"] = pd.to_datetime(arpa["time"])
 
-    image_features["time"] = pd.to_datetime(
-        image_features[image_date_column].astype(str)
-        + " "
-        + image_features[image_hour_column].astype(str)
-    )
-
-    image_features = image_features.drop(
-        columns=[
-            image_date_column,
-            image_hour_column,
-        ]
-    )
+    image_features = image_features.rename(columns={image_time_column: "time"})
+    image_features["time"] = pd.to_datetime(image_features["time"])
 
     merged_all = reduce(
         lambda left, right: pd.merge(
@@ -117,15 +106,8 @@ def merge_all_datasets(
         "wind_gust_max",
     ]
 
-    existing_cols = [
-        c for c in column_order
-        if c in merged_all.columns
-    ]
-
-    other_cols = [
-        c for c in merged_all.columns
-        if c not in existing_cols
-    ]
+    existing_cols = [c for c in column_order if c in merged_all.columns]
+    other_cols = [c for c in merged_all.columns if c not in existing_cols]
 
     merged_all = merged_all[existing_cols + other_cols]
 
