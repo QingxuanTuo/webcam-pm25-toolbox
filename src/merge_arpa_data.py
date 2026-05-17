@@ -1,63 +1,88 @@
-import pandas as pd
 from functools import reduce
+from pathlib import Path
 
-files = [
-    "table1.csv",
-    "table2.csv",
-    "table3.csv",
-    "table4.csv",
-    "table5.csv",
-    "table6.csv",
-    "table7.csv"
-]
+import pandas as pd
+
 
 def get_variable_name(sensor_id, value_col):
     value_col = value_col.strip()
 
-    if sensor_id == 5908:
-        return "precipitation_cumulative"
-    elif sensor_id == 5909:
-        return "temperature_mean"
-    elif sensor_id == 6044:
+    if sensor_id == 6048:
         return "wind_direction_mean"
-    elif sensor_id == 6179:
+
+    elif sensor_id == 5911:
+        return "temperature_mean"
+
+    elif sensor_id == 6597:
         return "relative_humidity_mean"
-    elif sensor_id == 6458:
-        return "global_radiation_mean"
-    elif sensor_id == 19242 and value_col == "Medio":
+
+    elif sensor_id == 19019 and value_col == "Medio":
         return "wind_speed_mean"
-    elif sensor_id == 19242 and value_col == "Massimo":
+
+    elif sensor_id == 19019 and value_col == "Massimo":
         return "wind_gust_max"
+
     else:
         return f"unknown_{sensor_id}_{value_col}"
 
-dfs = []
 
-for file in files:
-    df = pd.read_csv(file)
-    df.columns = df.columns.str.strip()
+def merge_arpa_tables(
+    files,
+    output_file,
+    time_column="Data-Ora",
+    sensor_column="Id Sensore",
+    utc_offset_hours=1,
+    missing_value=-999,
+):
+    dfs = []
 
-    sensor_id = int(df["Id Sensore"].iloc[0])
+    for file in files:
+        file = Path(file)
 
-    value_col = [c for c in df.columns if c not in ["Id Sensore", "Data-Ora"]][0]
+        df = pd.read_csv(file)
+        df.columns = df.columns.str.strip()
 
-    new_col = get_variable_name(sensor_id, value_col)
+        sensor_id = int(df[sensor_column].iloc[0])
 
-    df = df[["Data-Ora", value_col]].rename(columns={value_col: new_col})
+        value_col = [
+            c for c in df.columns
+            if c not in [sensor_column, time_column]
+        ][0]
 
-    dfs.append(df)
+        new_col = get_variable_name(sensor_id, value_col)
 
-merged = reduce(
-    lambda left, right: pd.merge(left, right, on="Data-Ora", how="outer"),
-    dfs
-)
+        df = df[[time_column, value_col]].rename(
+            columns={value_col: new_col}
+        )
 
-merged["Data-Ora"] = pd.to_datetime(merged["Data-Ora"])
-merged = merged.sort_values("Data-Ora")
+        dfs.append(df)
 
-merged.replace(-999, pd.NA, inplace=True)
+    merged = reduce(
+        lambda left, right: pd.merge(
+            left,
+            right,
+            on=time_column,
+            how="outer",
+        ),
+        dfs,
+    )
 
-merged.to_csv("arpa_merged.csv", index=False)
+    merged[time_column] = (
+        pd.to_datetime(merged[time_column])
+        - pd.Timedelta(hours=utc_offset_hours)
+    )
 
-print(merged.head())
-print(merged.columns)
+    merged = merged.sort_values(time_column)
+
+    merged.replace(missing_value, pd.NA, inplace=True)
+
+    output_file = Path(output_file)
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+
+    merged.to_csv(output_file, index=False)
+
+    print(f"Saved: {output_file}")
+    print("Shape:", merged.shape)
+    print(merged.head())
+
+    return merged
