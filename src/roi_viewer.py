@@ -255,7 +255,7 @@ def build_roi_viewer(image_folder):
     orientation = widgets.ToggleButtons(
         options=["Horizontal", "Vertical"],
         description="Swipe",
-    
+
     )
 
     refresh_btn = widgets.Button(

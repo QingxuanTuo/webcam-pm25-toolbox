@@ -1,41 +1,39 @@
-import re
-import json
 import csv
-from pathlib import Path
+import re
 from datetime import datetime
-
-import numpy as np
-from PIL import Image
-from matplotlib.colors import rgb_to_hsv
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
+import numpy as np
+from matplotlib.colors import rgb_to_hsv
+from PIL import Image
 
-IMG_EXTS = {".jpg", ".jpeg", ".JPG", ".JPEG"}
+
+IMG_EXTS = {".jpg", ".jpeg", ".JPG", ".JPEG", ".png", ".PNG"}
 NAME_RE = re.compile(r"^(?P<date>\d{8})-(?P<hour>\d{4})$")
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
-def load_rgb_array(p: Path) -> np.ndarray:
-    img = Image.open(p).convert("RGB")
+def load_rgb_array(image_path):
+    img = Image.open(image_path).convert("RGB")
     return np.array(img)
 
 
-def crop_roi(arr: np.ndarray, top: int, left: int, height: int, width: int) -> np.ndarray:
+def crop_roi(arr, top, left, height, width):
     return arr[top:top + height, left:left + width, :]
 
 
-def mean_rgb(arr: np.ndarray):
+def mean_rgb(arr):
     if arr.size == 0:
-        return (np.nan, np.nan, np.nan)
+        return np.nan, np.nan, np.nan
 
     r = arr[:, :, 0].mean()
     g = arr[:, :, 1].mean()
     b = arr[:, :, 2].mean()
 
-    return (float(r), float(g), float(b))
+    return float(r), float(g), float(b)
 
 
-def mean_saturation(arr: np.ndarray):
+def mean_saturation(arr):
     if arr.size == 0:
         return np.nan
 
@@ -46,7 +44,7 @@ def mean_saturation(arr: np.ndarray):
     return float(saturation.mean())
 
 
-def blue_red_ratio(arr: np.ndarray):
+def blue_red_ratio(arr):
     if arr.size == 0:
         return np.nan
 
@@ -54,33 +52,34 @@ def blue_red_ratio(arr: np.ndarray):
     b_mean = arr[:, :, 2].mean()
 
     eps = 1e-6
+
     return float(b_mean / (r_mean + eps))
 
 
-def image_contrast(arr: np.ndarray):
+def image_contrast(arr):
     if arr.size == 0:
         return np.nan
 
     gray = arr.mean(axis=2)
+
     return float(gray.std())
 
 
-def extract_roi_features(image_path: Path, roi: dict):
+def extract_roi_features(image_path, roi):
+    image_path = Path(image_path)
     arr = load_rgb_array(image_path)
 
-    top = roi["top"]
-    left = roi["left"]
-    height = roi["height"]
-    width = roi["width"]
+    top = int(roi["top"])
+    left = int(roi["left"])
+    height = int(roi["height"])
+    width = int(roi["width"])
 
     h, w, c = arr.shape
 
-    if (
-        c != 3
-        or h < top + height
-        or w < left + width
-    ):
-        raise ValueError("Image too small for ROI cropping")
+    if c != 3 or h < top + height or w < left + width:
+        raise ValueError(
+            f"Image too small for ROI cropping: {image_path.name}, image shape={arr.shape}, roi={roi}"
+        )
 
     roi_arr = crop_roi(arr, top, left, height, width)
 
@@ -99,49 +98,65 @@ def extract_roi_features(image_path: Path, roi: dict):
     }
 
 
-def extract_image_features(image_dir, output_csv, roi):
+def extract_image_features(
+    image_dir,
+    output_csv,
+    roi,
+    project_root=None,
+    image_timezone="Europe/Rome",
+    output_timezone="UTC",
+):
     image_dir = Path(image_dir)
     output_csv = Path(output_csv)
+
+    if project_root is not None:
+        project_root = Path(project_root)
 
     rows = []
     skipped_files = []
 
-    for p in sorted(image_dir.rglob("*")):
-        if not (p.is_file() and p.suffix in IMG_EXTS):
+    for image_path in sorted(image_dir.rglob("*")):
+        if not (image_path.is_file() and image_path.suffix in IMG_EXTS):
             continue
 
-        stem = p.stem
+        stem = image_path.stem
 
         if not NAME_RE.match(stem):
-            skipped_files.append((str(p), "Invalid filename format"))
+            skipped_files.append((str(image_path), "Invalid filename format"))
             continue
 
         try:
-            dt_local = datetime.strptime(
-                stem,
-                "%Y%m%d-%H%M"
-            ).replace(
-                tzinfo=ZoneInfo("Europe/Rome")
+            dt_local = datetime.strptime(stem, "%Y%m%d-%H%M").replace(
+                tzinfo=ZoneInfo(image_timezone)
             )
-
-            dt_utc = dt_local.astimezone(ZoneInfo("UTC"))
+            dt_output = dt_local.astimezone(ZoneInfo(output_timezone))
         except ValueError:
-            skipped_files.append((str(p), "Datetime parsing failed"))
+            skipped_files.append((str(image_path), "Datetime parsing failed"))
             continue
 
-        datetime_csv = dt_utc.strftime("%Y-%m-%d %H:%M:%S")
-        
+        datetime_csv = dt_output.strftime("%Y-%m-%d %H:%M:%S")
+
         try:
-            features = extract_roi_features(p, roi)
-        except Exception as e:
-            skipped_files.append((str(p), str(e)))
+            features = extract_roi_features(image_path, roi)
+        except Exception as error:
+            skipped_files.append((str(image_path), str(error)))
             continue
 
-        rows.append({
-            "datetime": datetime_csv,
-            **features,
-            "image_path": str(p.relative_to(PROJECT_ROOT))
-        })
+        if project_root is not None:
+            try:
+                image_path_value = str(image_path.relative_to(project_root))
+            except ValueError:
+                image_path_value = str(image_path)
+        else:
+            image_path_value = str(image_path)
+
+        rows.append(
+            {
+                "datetime": datetime_csv,
+                **features,
+                "image_path": image_path_value,
+            }
+        )
 
     output_csv.parent.mkdir(parents=True, exist_ok=True)
 
@@ -153,38 +168,16 @@ def extract_image_features(image_dir, output_csv, roi):
         "S_mean",
         "B_R_ratio",
         "contrast",
-        "image_path"
+        "image_path",
     ]
 
-    with output_csv.open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+    with output_csv.open("w", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
 
-    return rows, skipped_files
-if __name__ == "__main__":
-    
-    IMAGE_DIR = PROJECT_ROOT / "data" / "raw" / "images"
-
-    OUTPUT_CSV = (
-        PROJECT_ROOT
-        / "data"
-        / "interim"
-        / "image_features.csv"
-    )
-
-    import json
-
-    ROI_JSON = PROJECT_ROOT / "config" / "roi.json"
-
-    with open(ROI_JSON, "r") as f:
-        ROI = json.load(f)
-    rows, skipped_files = extract_image_features(
-        image_dir=IMAGE_DIR,
-        output_csv=OUTPUT_CSV,
-        roi=ROI
-    )
-
-    print(f"Done. Wrote {len(rows)} rows.")
-    print(f"Saved to: {OUTPUT_CSV}")
+    print(f"Saved image features: {output_csv}")
+    print(f"Rows written: {len(rows)}")
     print(f"Skipped files: {len(skipped_files)}")
+
+    return rows, skipped_files
