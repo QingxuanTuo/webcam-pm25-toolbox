@@ -46,7 +46,7 @@ def first_existing(paths, suffixes):
 def process_single_csv(csv_path):
     df = pd.read_csv(csv_path)
 
-    print("Single raw columns:", df.columns.tolist())
+    #print("Single raw columns:", df.columns.tolist())
 
     if "valid_time" not in df.columns:
         raise KeyError(
@@ -118,8 +118,9 @@ def process_single_csv(csv_path):
 
     out = df[keep_cols].sort_values("time").reset_index(drop=True)
 
-    print("Single processed columns:", out.columns.tolist())
-    print("Single processed shape:", out.shape)
+    #print("Single processed columns:", out.columns.tolist())
+    
+    #print("Single processed shape:", out.shape)
 
     return out
 
@@ -189,8 +190,8 @@ def process_pressure_netcdf(nc_path):
 
     out = out.sort_values("time").reset_index(drop=True)
 
-    print("Pressure processed columns:", out.columns.tolist())
-    print("Pressure processed shape:", out.shape)
+    #print("Pressure processed columns:", out.columns.tolist())
+    #print("Pressure processed shape:", out.shape)
 
     return out
 
@@ -258,7 +259,7 @@ def download_era5_data(
         "data_format": "csv",
     }
 
-    print("Downloading ERA5 single-level data...")
+    #print("Downloading ERA5 single-level data...")
 
     client.retrieve(
         "reanalysis-era5-single-levels-timeseries",
@@ -281,7 +282,7 @@ def download_era5_data(
         "download_format": "zip",
     }
 
-    print("Downloading ERA5 pressure-level data...")
+    #print("Downloading ERA5 pressure-level data...")
 
     client.retrieve(
         "reanalysis-era5-pressure-levels",
@@ -295,8 +296,8 @@ def download_era5_data(
     single_csv = first_existing(single_files, (".csv",))
     pressure_nc = first_existing(pressure_files, (".nc", ".netcdf"))
 
-    print("Single extracted file:", single_csv)
-    print("Pressure extracted file:", pressure_nc)
+    #print("Single extracted file:", single_csv)
+    #print("Pressure extracted file:", pressure_nc)
 
     single_df = process_single_csv(single_csv)
     pressure_df = process_pressure_netcdf(pressure_nc)
@@ -314,8 +315,8 @@ def download_era5_data(
 
     final_df.to_csv(output_file, index=False)
 
-    print(f"Saved merged CSV: {output_file}")
-    print("Shape:", final_df.shape)
-    print(final_df.head())
+    #print(f"Saved merged CSV: {output_file}")
+    #print("Shape:", final_df.shape)
+    #print(final_df.head())
 
     return final_df

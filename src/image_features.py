@@ -176,8 +176,8 @@ def extract_image_features(
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"Saved image features: {output_csv}")
-    print(f"Rows written: {len(rows)}")
-    print(f"Skipped files: {len(skipped_files)}")
+    #print(f"Saved image features: {output_csv}")
+    #print(f"Rows written: {len(rows)}")
+    #print(f"Skipped files: {len(skipped_files)}")
 
     return rows, skipped_files

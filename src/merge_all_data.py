@@ -116,9 +116,9 @@ def merge_all_datasets(
 
     merged_all.to_csv(output_file, index=False)
 
-    print(f"Saved: {output_file}")
-    print("Final rows:", len(merged_all))
-    print("Final shape:", merged_all.shape)
-    print(merged_all.head())
+    #print(f"Saved: {output_file}")
+    #print("Final rows:", len(merged_all))
+    #print("Final shape:", merged_all.shape)
+    #print(merged_all.head())
 
     return merged_all

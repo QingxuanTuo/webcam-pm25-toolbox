@@ -81,8 +81,8 @@ def merge_arpa_tables(
 
     merged.to_csv(output_file, index=False)
 
-    print(f"Saved: {output_file}")
-    print("Shape:", merged.shape)
-    print(merged.head())
+    #print(f"Saved: {output_file}")
+    #print("Shape:", merged.shape)
+    #print(merged.head())
 
     return merged

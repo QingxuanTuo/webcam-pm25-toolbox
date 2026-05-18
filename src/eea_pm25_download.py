@@ -71,7 +71,7 @@ def download_pm25_data(
         "source": "Jupyter notebook",
     }
 
-    print("Request:", body)
+   # print("Request:", body)
 
     response = requests.post(
         API_BASE + URLS_ENDPOINT,
@@ -81,7 +81,7 @@ def download_pm25_data(
     response.raise_for_status()
 
     urls = extract_urls(response.text)
-    print("Found parquet files:", len(urls))
+    #print("Found parquet files:", len(urls))
 
     if len(urls) == 0:
         raise ValueError("No parquet file URLs found from the API response.")
@@ -90,7 +90,7 @@ def download_pm25_data(
         file_name = url.split("/")[-1]
         out_path = temp_dir / file_name
 
-        print(f"[{i}/{len(urls)}] Downloading {file_name}")
+        # print(f"[{i}/{len(urls)}] Downloading {file_name}")
 
         download_file(url, out_path)
         time.sleep(0.2)
@@ -103,7 +103,7 @@ def download_pm25_data(
     dfs = []
 
     for file in parquet_files:
-        print("Reading", file.name)
+        #print("Reading", file.name)
 
         df = pd.read_parquet(file)
         df["source_file"] = file.name
@@ -111,8 +111,8 @@ def download_pm25_data(
 
     merged = pd.concat(dfs, ignore_index=True)
 
-    print("Merged shape:", merged.shape)
-    print("Columns:", merged.columns.tolist())
+    #print("Merged shape:", merged.shape)
+    #print("Columns:", merged.columns.tolist())
 
     filtered = merged[
         merged["Samplingpoint"]
@@ -120,7 +120,7 @@ def download_pm25_data(
         .str.startswith(station_prefix, na=False)
     ].copy()
 
-    print("After station filter:", filtered.shape)
+    #print("After station filter:", filtered.shape)
 
     filtered["Start"] = pd.to_datetime(filtered["Start"], utc=True)
     filtered["End"] = pd.to_datetime(filtered["End"], utc=True)
@@ -138,7 +138,7 @@ def download_pm25_data(
 
     filtered = filtered.sort_values("Start").reset_index(drop=True)
 
-    print("After time filter:", filtered.shape)
+    #print("After time filter:", filtered.shape)
 
     target_columns = [
         "Samplingpoint",
@@ -161,12 +161,12 @@ def download_pm25_data(
 
     final_df.to_csv(output_file, index=False)
 
-    print(f"Saved CSV: {output_file}")
-    print("Final shape:", final_df.shape)
-    print(final_df.head())
+    #print(f"Saved CSV: {output_file}")
+    #print("Final shape:", final_df.shape)
+    #print(final_df.head())
 
     if remove_temp and temp_dir.exists():
         shutil.rmtree(temp_dir)
-        print("Temporary PM2.5 files removed.")
+        #print("Temporary PM2.5 files removed.")
 
     return final_df
