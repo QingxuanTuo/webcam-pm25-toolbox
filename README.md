@@ -15,7 +15,6 @@ The project provides a reproducible and extensible framework for:
 - Machine learning research
 - Urban environmental studies
 
----
 
 # Project Overview
 
@@ -38,11 +37,11 @@ The complete pipeline includes:
 6. Data cleaning and feature engineering
 7. Final machine-learning-ready dataset generation
 
----
+
 
 # Project Features
 
----
+
 
 ## 1. Webcam Image Processing
 
@@ -68,7 +67,7 @@ Final output:
 data/interim/image_features.csv
 ```
 
----
+
 
 ## 2. PM2.5 Data Download
 
@@ -88,7 +87,7 @@ Final output:
 data/interim/PM25_MI_hourly.csv
 ```
 
----
+
 
 ## 3. ERA5 Meteorological Data Download and Processing
 
@@ -128,7 +127,7 @@ Final output:
 data/interim/era5_all_merged.csv
 ```
 
----
+
 
 ## 4. ARPA Lombardia Weather Station Integration
 
@@ -155,7 +154,6 @@ Final output:
 data/interim/arpa_merged.csv
 ```
 
----
 
 ## 5. Multi-Source Dataset Integration
 
@@ -176,7 +174,7 @@ data/interim/merged_dataset.csv
 
 This dataset represents the raw integrated environmental dataset before cleaning and feature engineering.
 
----
+
 
 ## 6. Data Cleaning and Feature Engineering
 
@@ -247,7 +245,7 @@ Final dataset characteristics:
 - No duplicate timestamps
 - Ready for machine learning and environmental analysis
 
----
+
 
 # Project Structure
 
@@ -292,7 +290,7 @@ webcam-pm25-toolbox/
 └── README.md
 ```
 
----
+
 
 # Installation
 
@@ -303,7 +301,7 @@ git clone https://github.com/your-username/your-repository.git
 cd your-repository
 ```
 
----
+
 
 ## 2. Create Virtual Environment
 
@@ -321,7 +319,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
----
+
 
 ## 3. Install Dependencies
 
@@ -329,13 +327,13 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
----
+
 
 # ERA5 CDS API Configuration
 
 ERA5 download requires a Copernicus Climate Data Store (CDS) account.
 
----
+
 
 ## Step 1 — Create CDS Account
 
@@ -345,7 +343,7 @@ Register at:
 https://cds.climate.copernicus.eu/
 ```
 
----
+
 
 ## Step 2 — Obtain API Key
 
@@ -354,7 +352,7 @@ After login:
 - Open your CDS profile
 - Copy your API key
 
----
+
 
 ## Step 3 — Create `.cdsapirc`
 
@@ -379,7 +377,6 @@ url: https://cds.climate.copernicus.eu/api
 key: YOUR_UID:YOUR_API_KEY
 ```
 
----
 
 # Main Third-Party Python Libraries
 
@@ -397,11 +394,11 @@ cdsapi
 imageio
 ```
 
----
+
 
 # Workflow
 
----
+
 
 ## Step 1 — Multi-Source Data Download, Processing, and Integration
 
@@ -439,7 +436,7 @@ data/interim/merged_dataset.csv
 
 is the raw integrated dataset before cleaning and feature engineering.
 
----
+
 
 ## Step 2 — Data Cleaning, Quality Assessment, and Feature Engineering
 
@@ -486,13 +483,13 @@ Final dataset characteristics:
 - No duplicate timestamps
 - Ready for modeling and environmental analysis
 
----
+
 
 # Standalone Scripts
 
 The `src/` directory contains reusable standalone scripts that can also be executed independently.
 
----
+
 
 ## Webcam Image Download
 
@@ -502,7 +499,7 @@ python src/webcam_download.py
 
 Downloads webcam images and saves them with timestamp-based filenames.
 
----
+
 
 ## Interactive ROI Viewer
 
@@ -512,7 +509,7 @@ src/roi_viewer.py
 
 Provides an interactive ROI selection interface inside Jupyter Notebook.
 
----
+
 
 ## Image Feature Extraction
 
@@ -522,7 +519,7 @@ src/image_features.py
 
 Extracts RGB, saturation, blue/red ratio, and contrast features from selected ROIs.
 
----
+
 
 ## PM2.5 Data Download
 
@@ -532,7 +529,7 @@ python src/eea_pm25_download.py
 
 Downloads and filters hourly PM2.5 observations from the EEA API.
 
----
+
 
 ## ERA5 Meteorological Data Download
 
@@ -542,7 +539,7 @@ python src/era5_download.py
 
 Downloads ERA5 single-level and pressure-level meteorological variables from CDS.
 
----
+
 
 ## ARPA Weather Data Integration
 
@@ -552,7 +549,7 @@ python src/merge_arpa_data.py
 
 Merges multiple ARPA Lombardia weather station CSV files.
 
----
+
 
 ## Multi-Source Dataset Integration
 
@@ -562,7 +559,7 @@ python src/merge_all_data.py
 
 Integrates webcam features, PM2.5 observations, ERA5 data, and ARPA weather station data using UTC hourly timestamps.
 
----
+
 
 # Technologies Used
 
@@ -576,7 +573,7 @@ Integrates webcam features, PM2.5 observations, ERA5 data, and ARPA weather stat
 - Requests
 - Jupyter Notebook
 
----
+
 
 # Dataset Applications
 
@@ -590,7 +587,7 @@ The generated dataset can support:
 - Machine learning workflows
 - Air pollution forecasting
 
----
+
 
 # Future Improvements
 
@@ -603,7 +600,7 @@ Possible future extensions include:
 - Multi-city support
 - Automated visualization dashboards
 
----
+
 
 # Authors
 
@@ -612,7 +609,7 @@ Possible future extensions include:
 
 GeoInformatics Project
 
----
+
 
 # License
 
