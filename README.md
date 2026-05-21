@@ -1,605 +1,619 @@
-# 01 Webcam-Based Air Quality Data Collection Pipeline
+# Webcam-Based PM2.5 Dataset Generation and Multi-Source Environmental Data Fusion
 
-This project automatically collects **webcam images from Milan** and stores them in Google Drive.  
-The dataset will be used for air quality research, particularly **PM2.5 estimation based on image data**.
+A complete geoinformatics and environmental data processing pipeline for generating a unified hourly environmental dataset by integrating:
+
+- Webcam image features
+- PM2.5 air quality observations
+- ERA5 reanalysis meteorological data
+- ARPA Lombardia ground weather station data
+
+The project provides a reproducible and extensible framework for:
+
+- PM2.5 prediction
+- Air quality analysis
+- Environmental monitoring
+- Machine learning research
+- Urban environmental studies
 
 ---
 
-## Pipeline Overview
+# Project Overview
+
+This project combines:
+
+- Computer Vision
+- Environmental data acquisition
+- Meteorological data processing
+- Multi-source spatiotemporal data fusion
+
+using automated Python workflows.
+
+The complete pipeline includes:
+
+1. Webcam image processing
+2. PM2.5 data download
+3. ERA5 meteorological data download
+4. ARPA ground station integration
+5. Multi-source dataset integration
+6. Data cleaning and feature engineering
+7. Final machine-learning-ready dataset generation
+
+---
+
+# Project Features
+
+---
+
+## 1. Webcam Image Processing
+
+The project uses fixed urban webcams as visual environmental data sources.
+
+An interactive ROI (Region of Interest) selection tool based on `matplotlib` and `ipywidgets` allows users to manually select:
+
+- Sky regions
+- Urban regions
+
+The system automatically extracts several image features related to air quality, including:
+
+- RGB mean values
+- Saturation mean
+- Blue/Red ratio
+- Image contrast
+
+Image timestamps are automatically parsed from filenames and converted from Europe/Rome local time to UTC.
+
+Final output:
 
 ```text
-GitHub Actions (scheduled workflow)
-        ↓
-Runs daily at 02:00 UTC (≈ 03:00 Milan time)
-        ↓
-Execute webcam_download.py
-        ↓
-Scrape Milan webcam images
-        ↓
-Save to local images/ directory
-        ↓
-Upload to Google Drive via rclone
+data/interim/image_features.csv
 ```
----
-
-## Data Source
-
-- Website: https://www.meteogiuliacci.it/meteo-webcam/webcam-milano  
-- Data type: Hourly webcam images of Milan
 
 ---
 
-## Core Script
+## 2. PM2.5 Data Download
 
-**webcam_download.py** This script is responsible for automatically scraping and saving webcam images.
+Hourly PM2.5 observations are automatically downloaded from the European Environment Agency (EEA) API.
 
-### Main functionalities:
+The workflow includes:
 
-- Extract image URLs containing `"hour"`
-- Download images via `requests`
-- Rename images based on date and hour
+- API requests
+- Parquet file download
+- Monitoring station filtering
+- UTC time conversion
+- Clean hourly PM2.5 dataset generation
 
----
-##  Automation & Monitoring
-
-To ensure the pipeline runs correctly, it is recommended to perform regular checks:
-
-### 1. GitHub Actions Status
-
-Navigate to: GitHub → Actions
-
-Verify that recent workflow runs are marked as: **Success**
-
-This indicates that the automated data collection is functioning properly.
-
----
-
-### 2. Google Drive Data Integrity
-
-Check the corresponding Google Drive folder and ensure that:
-
-- A new folder is generated each day
-- Each folder contains multiple images (typically around 20 images per day)
-
-Consistent data updates confirm that the pipeline is operating as expected.
-
-## Data Storage Structure
+Final output:
 
 ```text
-images/
-└── DD_MM_YYYY/
-    └── giuliacci/
-        ├── YYYYMMDD-0400.jpg
-        ├── YYYYMMDD-0500.jpg
-        ├── ...
-        └── YYYYMMDD-2300.jpg
+data/interim/PM25_MI_hourly.csv
 ```
-##  Workflow Configuration
-
-The pipeline is implemented using a scheduled GitHub Actions workflow:
-
-- Defined in: `.github/workflows/webcam.yml`
-- Runtime environment: `ubuntu-latest` with Python 3.10
-
-The workflow automates:
-
-- Running the image scraping script (`webcam_download.py`)
-- Managing dependencies (`requests`, `beautifulsoup4`)
-
-Sensitive credentials (e.g., rclone configuration) are securely stored using GitHub Secrets (`RCLONE_CONF`).
-
-# 02 EEA PM2.5 Downloader – Milan Monitoring Station
-
-## Overview
-
-This notebook (`eea_pm25_downloader.ipynb`) provides a complete workflow for downloading and preprocessing hourly PM2.5 data from the European Environment Agency (EEA) Air Quality e-Reporting database.
-
-The notebook automatically downloads air quality data for Milan, filters the data for a specific monitoring station, restricts the data to a selected time range, and exports a clean CSV file for further analysis and modelling.
-
-This notebook is the first step of the overall project workflow.
 
 ---
 
-## Data Source
+## 3. ERA5 Meteorological Data Download and Processing
 
-Data are obtained from the European Environment Agency (EEA) Air Quality Download Service:
+ERA5 reanalysis meteorological data are downloaded from the Copernicus Climate Data Store (CDS).
 
-https://eeadmz1-downloads-webapp.azurewebsites.net/
+### Single-Level Variables
 
-Dataset used:
-- Up-to-date data (E2a)
-- Hourly aggregation
-- Pollutant: PM2.5
-- Country: Italy
-- City: Milano (greater city)
+The project downloads:
 
----
-
-## Monitoring Station
-
-Although multiple monitoring stations are available in Milan, this project uses data from the following station:
-
-**Sampling Point ID:**  
-IT/SPO.IT0477A_6001_BETA
-
-This station was selected because it provides consistent hourly PM2.5 measurements suitable for comparison with webcam images.
-
----
-
-## Workflow Description
-
-The notebook performs the following steps:
-
-1. Define download parameters (country, city, pollutant, time range).
-2. Send a request to the EEA API and retrieve parquet file URLs.
-3. Download all parquet files corresponding to Milan monitoring stations.
-4. Merge all parquet files into a single dataset.
-5. Filter the dataset to keep only the selected monitoring station.
-6. Filter the dataset by the selected time period.
-7. Convert timestamps and remove timezone information.
-8. Export the cleaned dataset as a CSV file.
-
----
-
-## Input and Output
-
-### Input
-- EEA Air Quality data (downloaded automatically as parquet files)
-
-### Output
-- `PM25_MI_hourly.csv`
-
-This CSV file contains the following fields:
-
-- Samplingpoint
-- Pollutant
-- Start
-- End
-- Value (PM2.5 concentration)
-- Unit
-- AggType
-- Validity
-- Verification
-- ResultTime
-- DataCapture
-- FkObservationLog
-
-The `Start` column represents the start time of each hourly measurement interval.
-
----
-
-## How to Use
-
-1. Open `eea_pm25_downloader.ipynb`
-2. Modify the time range in the parameter section:
-
-        api_start = "YYYY-MM-DDTHH:MM:SSZ"
-        api_end   = "YYYY-MM-DDTHH:MM:SSZ"
-
-
-# 03 ERA5 Meteorological Data Collection and Processing
-
-## Overview
-
-This module provides a complete workflow for downloading, processing, and integrating meteorological data from ERA5 reanalysis datasets.
-
-The purpose of this step is to generate a clean, analysis-ready dataset that complements webcam imagery and PM2.5 observations, enabling more robust air quality modelling.
-
-Two ERA5 datasets are used:
-
-- ERA5 single levels reanalysis  
-- ERA5 pressure levels reanalysis  
-
-These datasets together provide both **surface-level conditions** and **upper-air atmospheric structure**.
-
----
-
-## Data Source
-
-Data are obtained from the Copernicus Climate Data Store (CDS):
-
-https://cds.climate.copernicus.eu/
-
-### Dataset 1 – ERA5 Single Levels
-
-- Data type: Hourly time series (point-based)  
-- Location: Milan (user-defined coordinates)  
-
-Selected variables:
-
-- 2m temperature (T2M)  
-- 10m u-component of wind (U10)  
-- 10m v-component of wind (V10)  
-- Surface pressure (SP)  
-- Total precipitation (TP)  
+- 2m temperature (T2M)
+- 2m dew point temperature (D2M)
+- 10m wind components (U10, V10)
+- Surface pressure (SP)
+- Total precipitation (TP)
 - Boundary layer height (BLH)
-- 2m dewpoint temperature (D2M) 
-- Total Cloud Cover (TCC) 
-- Cloud Base Height (CBH) 
+- Total cloud cover (TCC)
+- Cloud base height (CBH)
 
-These variables describe **local meteorological conditions affecting PM2.5 dispersion and accumulation**.
+### Pressure-Level Variables
 
----
+The project also downloads:
 
-### Dataset 2 – ERA5 Pressure Levels
+- Geopotential height at 500 hPa and 850 hPa
+- Temperature
+- Wind components
 
-- Data type: Hourly gridded data  
+### Derived Variables
 
-Selected pressure levels:
+Additional variables are computed:
 
-- 850 hPa (lower atmosphere)  
-- 500 hPa (mid-troposphere)  
+- Relative humidity (RH)
+- Wind speed (WS10)
 
-Selected variables:
+Final output:
 
-- Temperature (T)  
-- U-component of wind (U)  
-- V-component of wind (V)  
-- Geopotential (GP)  
-
-These variables represent **large-scale atmospheric dynamics and stability**, which influence pollution transport and vertical mixing.
-
----
-### Additional Meteorological Variables
-
-- Relative Humidity (RH)
-
-Relative humidity is not directly provided in the selected ERA5 time-series dataset. Therefore, it is derived from temperature (T2M) and dew point temperature (D2M) using the following formulation:
-
-- Temperature is converted from Kelvin to Celsius
-- Relative humidity is calculated using the August–Roche–Magnus approximation
-
-RH is an important variable because it affects aerosol hygroscopic growth and is strongly related to haze formation and visibility conditions.
-
-
-## Workflow Description
-
-The ERA5 processing pipeline consists of the following steps:
-
-### Step 1 – Data Download
-
-Data are retrieved using the CDS API:
-
-- Single-level data are downloaded as CSV files (time series at a specific location)  
-- Pressure-level data are downloaded as NetCDF files (multi-dimensional gridded data)  
+```text
+data/interim/era5_all_merged.csv
+```
 
 ---
 
-### Step 2 – Data Extraction
+## 4. ARPA Lombardia Weather Station Integration
 
-- ZIP archives are automatically extracted  
-- Relevant files are identified:  
+The project integrates multiple ARPA Lombardia weather station CSV files.
 
-  - CSV for single-level data  
-  - NetCDF for pressure-level data  
+Supported variables include:
 
----
+- Air temperature
+- Relative humidity
+- Wind direction
+- Wind speed
+- Gust wind speed
 
-### Step 3 – Data Preprocessing
+The system automatically:
 
-**Single-Level Data**
+- Maps sensor IDs
+- Replaces invalid values
+- Converts timestamps to UTC
+- Merges multiple weather station tables
 
-- Convert timestamps to standard datetime format  
-- Remove timezone information  
-- Rename variables to concise names (e.g., T2M, U10)  
-- Select relevant columns  
+Final output:
 
----
-
-**Pressure-Level Data**
-
-- Read NetCDF files using `xarray`  
-- Aggregate spatial grid values (average over ROI)  
-- Convert from long format to wide format  
-- Generate derived variables:
-T_500, U_500, V_500, GP_500
-T_850, U_850, V_850, GP_850
+```text
+data/interim/arpa_merged.csv
+```
 
 ---
 
-### Step 4 – Data Integration
+## 5. Multi-Source Dataset Integration
 
-- Merge single-level and pressure-level datasets using the time column  
-- Ensure consistent timestamp format:
-YYYY-MM-DD HH:MM:SS
+The system integrates:
 
+- Webcam image features
+- PM2.5 observations
+- ERA5 meteorological data
+- ARPA ground station observations
 
----
+using UTC hourly timestamps.
 
-## Input and Output
+Final output:
 
-### Input
+```text
+data/interim/merged_dataset.csv
+```
 
-- ERA5 single-level CSV data (downloaded automatically)  
-- ERA5 pressure-level NetCDF data (downloaded automatically)  
-
----
-
-### Output
-era5_all_merged.csv
-
-# 04 Data Integration: PM2.5 and ERA5 Dataset
-
-## Overview
-
-This step integrates the PM2.5 air quality data with ERA5 meteorological data to produce a unified, analysis-ready dataset. The merged dataset will be used for subsequent modelling tasks, including the estimation of PM2.5 concentrations from webcam imagery.
+This dataset represents the raw integrated environmental dataset before cleaning and feature engineering.
 
 ---
 
-## Input Data
+## 6. Data Cleaning and Feature Engineering
 
-The integration step uses the following datasets:
+After dataset integration, the merged dataset undergoes:
 
-- PM2.5 dataset (EEA):
-  - `PM25_MI_hourly.csv`
-- ERA5 meteorological dataset:
-  - `era5_all_merged.csv`
+- Data quality assessment
+- Missing-value handling
+- Outlier analysis
+- Temporal consistency checks
+- Feature engineering
+- Validation and visualization
 
----
+### Data Quality Assessment
 
-## Temporal Alignment
+Includes:
 
-PM2.5 measurements are reported as hourly intervals with a **Start** and **End** time:
-Start → End
+- Missing-value analysis
+- Duplicate timestamp detection
+- Physical invalid-value detection
+- IQR-based outlier detection
+- Temporal continuity checks
 
+### Data Cleaning
 
-In this project, the **Start timestamp is used for alignment** with ERA5 data.
+Includes:
 
-Reason:
+- Datetime conversion
+- Dataset sorting
+- Missing-value interpolation
+- Wind-direction filling
+- Duplicate removal
+- Numeric conversion
 
-- ERA5 data are provided at hourly resolution
-- The Start time represents the beginning of the measurement interval
-- Using Start ensures consistent temporal matching between datasets
+### Feature Engineering
 
----
+Generated features include:
 
-## Workflow Description
+- hour
+- day
+- weekday
+- month
+- hour_sin
+- hour_cos
+- is_daytime
+- wind_dir_sin
+- wind_dir_cos
 
-The integration process performs the following steps:
+### Validation and Visualization
 
-1. Load PM2.5 and ERA5 datasets
-2. Convert timestamps to a consistent datetime format
-3. Align datasets based on the hourly timestamp
-4. Extract relevant PM2.5 fields (Value, Unit)
-5. Merge PM2.5 data with ERA5 variables
-6. Export the final merged dataset
+Includes:
 
----
+- Variable distribution visualization
+- Correlation analysis
+- PM2.5 time-series visualization
+- Final dataset validation
 
-## Output
+Final output:
 
-The final dataset is saved as:
-pm25_era5_merged.csv
+```text
+data/processed/final_dataset.csv
+```
 
+Final dataset characteristics:
 
-This dataset contains both air quality observations and meteorological variables, and is ready for machine learning and analysis.
-
----
-
-## Features
-
-The merged dataset includes the following variables:
-
-### PM2.5 Variables
-- Value (PM2.5 concentration)
-- Unit
-
-### ERA5 Surface Variables
-- T2M (2m temperature)
-- D2M (2m dewpoint temperature)
-- RH (Relative Humidity)
-- U10 (10m u wind component)
-- V10 (10m v wind component)
-- SP (surface pressure)
-- TP (total precipitation)
-- BLH (boundary layer height)
-- TCC (Total Cloud Cover) 
-- CBH (Cloud Base Height)
-  
-### ERA5 Pressure-Level Variables
-- GP_500, GP_850 (geopotential)
-- T_500, T_850 (temperature)
-- U_500, U_850 (wind u-component)
-- V_500, V_850 (wind v-component)
+- 220 rows
+- 41 columns
+- No missing values
+- No duplicate timestamps
+- Ready for machine learning and environmental analysis
 
 ---
 
-## Script
+# Project Structure
 
-The integration is implemented in the following script:
-merge_pm25_era5.py
+```text
+webcam-pm25-toolbox/
+│
+├── config/
+│   └── roi.json
+│
+├── data/
+│   ├── raw/
+│   │   ├── arpa/
+│   │   ├── era5/
+│   │   ├── images/
+│   │   └── pm25/
+│   │
+│   ├── interim/
+│   │   ├── arpa_merged.csv
+│   │   ├── era5_all_merged.csv
+│   │   ├── image_features.csv
+│   │   ├── merged_dataset.csv
+│   │   └── PM25_MI_hourly.csv
+│   │
+│   └── processed/
+│       └── final_dataset.csv
+│
+├── notebooks/
+│   ├── 01_Webcam-Based PM2.5 Dataset Pipeline.ipynb
+│   └── 02_Dataset Cleaning and Preprocessing.ipynb
+│
+├── src/
+│   ├── webcam_download.py
+│   ├── roi_viewer.py
+│   ├── image_features.py
+│   ├── eea_pm25_download.py
+│   ├── era5_download.py
+│   ├── merge_arpa_data.py
+│   └── merge_all_data.py
+│
+├── requirements.txt
+│
+└── README.md
+```
 
-# 05 Visual Comparison & ROI Exploration
+---
 
-This notebook provides an interactive tool for comparing two webcam images using a **swipe overlay**. It is designed for visual inspection of image differences under different dates or times and supports manual **ROI (Region of Interest)** exploration.
+# Installation
 
-The notebook allows users to:
+## 1. Clone Repository
 
-- select two images from a local folder
-- crop the same ROI from both images
-- compare them interactively with a horizontal or vertical swipe
-- switch between multiple visualization modes
-- visually inspect the selected ROI on the original full images
+```bash
+git clone https://github.com/your-username/your-repository.git
+cd your-repository
+```
 
-This tool is mainly intended for:
+---
 
-- exploratory image comparison
-- ROI selection
-- qualitative assessment of haze / visibility differences
-- preparation for later feature extraction
+## 2. Create Virtual Environment
 
-## Main Features
+### Windows
 
-### 1. Interactive image comparison
-Two images can be selected from a folder and compared using a swipe overlay.
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+```
 
-### 2. ROI cropping
-The same ROI is applied to both images using:
+### Linux / macOS
 
-- `top`
-- `left`
-- `height`
-- `width`
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
-### 3. Multiple visualization modes
-The notebook supports the following display modes:
+---
 
-- **RGB** — overall color and brightness
-- **HSV** — HSV visualized back in RGB space
-- **Saturation** — degree of color intensity / greyness
-- **R** — red channel
-- **G** — green channel
-- **B** — blue channel
-- **B/R** — blue-to-red ratio, useful for atmospheric scattering analysis
-
-### 4. Swipe overlay
-Comparison can be displayed using:
-
-- **Horizontal swipe**
-- **Vertical swipe**
-
-The swipe position can be adjusted interactively.
-
-### 5. ROI verification on original images
-The notebook also shows the selected ROI as a red rectangle on the original full images, making it easier to verify whether the cropped region is appropriate.
-
-### 6. Current ROI output
-The notebook prints the currently selected ROI parameters for easy recording and reuse.
-
-## Requirements
-
-All required Python packages for this notebook are listed in `requirements.txt`, including:
-
-- `numpy`
-- `imageio`
-- `matplotlib`
-- `ipywidgets`
-
-Install them with:
+## 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-# 06 ARPA Meteorological Data Source and Acquisition
+---
 
-The ground-based meteorological data used in this project are obtained from the official platform of ARPA Lombardia (Regional Environmental Protection Agency of Lombardy):
+# ERA5 CDS API Configuration
 
-https://www.arpalombardia.it/temi-ambientali/meteo-e-clima/form-richiesta-dati
+ERA5 download requires a Copernicus Climate Data Store (CDS) account.
 
-### 1 Data Retrieval
+---
 
-Data are downloaded via the ARPA online request form with the following configuration:
+## Step 1 — Create CDS Account
 
-- **Station**: Milano - v. Juvara  
-- **Time range**: consistent with the study period  
-- **Temporal resolution**: Oraria (hourly)  
+Register at:
 
-### 2 Selected Variables
+```text
+https://cds.climate.copernicus.eu/
+```
 
-The following meteorological variables relevant to air pollution analysis are selected:
+---
 
-| Variable | Description | Output Field |
-|----------|------------|--------------|
-| Precipitazione | Precipitation | Valore Cumulato |
-| Temperatura | Temperature | Medio |
-| Direzione Vento | Wind Direction | Medio |
-| Umidità Relativa | Relative Humidity | Medio |
-| Radiazione Globale | Global Radiation | Medio |
-| Velocità Vento | Wind Speed | Medio |
-| Raffica Velocità Vento | Wind Gust | Massimo |
+## Step 2 — Obtain API Key
 
-### 3 Data Characteristics
+After login:
 
-The ARPA dataset presents the following characteristics:
+- Open your CDS profile
+- Copy your API key
 
-- Each variable is exported as a **separate CSV file**  
-- The time column is labeled as `Data-Ora`  
-- Data are provided as **hourly time series**  
-- Missing values are encoded as `-999`  
-- Wind speed and wind gust share the same `Id Sensore` (19242) and must be distinguished by the field:
-  - `Medio` → average wind speed  
-  - `Massimo` → wind gust (maximum)
-  - 
-### 4 ARPA Data Merging
+---
 
-Since ARPA data are stored separately by variable, a horizontal merge is required:
+## Step 3 — Create `.cdsapirc`
 
-- Use `Data-Ora` as the primary key  
-- Perform time-aligned merging (outer join) across the 7 CSV files  
-- Rename variables using consistent semantic naming:
+Create the following file in your home directory.
 
-precipitation_cumulative
-temperature_mean
-wind_direction_mean
-relative_humidity_mean
-global_radiation_mean
-wind_speed_mean
-wind_gust_max
+### Windows
 
-# 07 Data Integration and Preprocessing
+```text
+C:\Users\YOUR_USERNAME\.cdsapirc
+```
 
-To construct a unified dataset for air pollution analysis and modeling, multiple data sources are temporally aligned, integrated, and preprocessed. The final dataset combines air pollution indicators, ground-based meteorological observations, atmospheric reanalysis variables, and image-derived visual features for subsequent analysis, feature exploration, and predictive modeling.
+### Linux / macOS
 
-### 1 Multi-source Data Integration
+```text
+~/.cdsapirc
+```
 
-The final dataset integrates the following three categories of data:
+File content:
 
-- **ARPA Ground-based Meteorological Observations (`arpa_merged.csv`)**  
-  This dataset is collected from ARPA Lombardia meteorological monitoring stations and contains local surface meteorological observations, including temperature, humidity, precipitation, wind speed, wind direction, solar radiation, and wind gust information. These variables are used to describe near-surface atmospheric conditions.
+```text
+url: https://cds.climate.copernicus.eu/api
+key: YOUR_UID:YOUR_API_KEY
+```
 
-- **PM2.5 and ERA5 Reanalysis Data (`pm25_era5_merged.csv`)**  
-  This dataset contains PM2.5 concentration measurements together with ERA5 meteorological reanalysis variables. It is used to represent both air pollution levels and large-scale atmospheric background conditions. ERA5 variables provide additional information about boundary layer dynamics, wind fields, temperature fields, and geopotential structures at different pressure levels.
+---
 
-- **Image ROI Feature Data (`image_feature_roi.csv`)**  
-  This dataset contains visual features extracted from the Region of Interest (ROI) in environmental images. Extracted features include RGB color statistics, saturation-related features, color ratios, and image contrast, which may provide complementary information related to atmospheric visibility and environmental conditions.
+# Main Third-Party Python Libraries
 
-All datasets are aligned using a unified timestamp and merged using an **inner join**, ensuring that only timestamps simultaneously present in all three datasets are retained in the final dataset.
+```text
+pandas
+numpy
+matplotlib
+pillow
+xarray
+requests
+ipywidgets
+jupyter
+beautifulsoup4
+cdsapi
+imageio
+```
 
-### 2 Final Dataset Structure
+---
 
-The final merged dataset contains four major categories of information:
+# Workflow
 
-- **Air Pollution Indicators (PM2.5)**  
-  Represent the concentration of fine particulate matter near the surface and are used as the target variable for pollution analysis and prediction.
+---
 
-- **ERA5 Meteorological Reanalysis Variables**  
-  Describe large-scale atmospheric background conditions and vertical atmospheric structures, including:
-  - T2M
-  - U10 / V10
-  - SP
-  - TP
-  - BLH
-  - GP_500 / GP_850
-  - T_500 / T_850
-  - U_500 / U_850
-  - V_500 / V_850
+## Step 1 — Multi-Source Data Download, Processing, and Integration
 
-- **ARPA Ground-based Meteorological Variables**  
-  Including:
-  - precipitation_cumulative
-  - temperature_mean
-  - wind_direction_mean
-  - relative_humidity_mean
-  - global_radiation_mean
-  - wind_speed_mean
-  - wind_gust_max
+Open and run:
 
-- **Image-derived ROI Visual Features**  
-  Including:
-  - R_roi
-  - G_roi
-  - B_roi
-  - S_mean
-  - B_R_ratio
-  - contrast
-  - image_path
+```text
+notebooks/01_Webcam-Based PM2.5 Dataset Pipeline.ipynb
+```
 
-The integrated dataset forms a unified multivariate time-series dataset capable of simultaneously representing:
+This notebook contains the complete dataset construction workflow, including:
 
-- Air pollution level variations
-- Local surface meteorological conditions
-- Large-scale atmospheric environmental characteristics
-- Image-based visual environmental information
+- Webcam image loading
+- Interactive ROI selection
+- Image feature extraction
+- PM2.5 data download and processing
+- ERA5 meteorological data download and processing
+- ARPA Lombardia weather station integration
+- UTC hourly multi-source dataset integration
 
-This dataset provides a comprehensive foundation for subsequent air pollution prediction, feature importance analysis, and GeoInformatics-related research.
+Generated intermediate datasets include:
+
+```text
+data/interim/image_features.csv
+data/interim/PM25_MI_hourly.csv
+data/interim/era5_all_merged.csv
+data/interim/arpa_merged.csv
+data/interim/merged_dataset.csv
+```
+
+where:
+
+```text
+data/interim/merged_dataset.csv
+```
+
+is the raw integrated dataset before cleaning and feature engineering.
+
+---
+
+## Step 2 — Data Cleaning, Quality Assessment, and Feature Engineering
+
+Open and run:
+
+```text
+notebooks/02_Dataset Cleaning and Preprocessing.ipynb
+```
+
+This notebook performs:
+
+- Data loading
+- Dataset profiling
+- Missing-value analysis
+- Temporal consistency checks
+- Duplicate timestamp checks
+- Invalid-value detection
+- IQR outlier analysis
+- Missing-value interpolation
+- Column filtering
+- Numeric conversion
+- Temporal feature generation
+- Wind-direction cyclical encoding
+- Data visualization
+- PM2.5 correlation analysis
+
+Input dataset:
+
+```text
+data/interim/merged_dataset.csv
+```
+
+Final output:
+
+```text
+data/processed/final_dataset.csv
+```
+
+Final dataset characteristics:
+
+- 220 rows
+- 41 columns
+- No missing values
+- No duplicate timestamps
+- Ready for modeling and environmental analysis
+
+---
+
+# Standalone Scripts
+
+The `src/` directory contains reusable standalone scripts that can also be executed independently.
+
+---
+
+## Webcam Image Download
+
+```bash
+python src/webcam_download.py
+```
+
+Downloads webcam images and saves them with timestamp-based filenames.
+
+---
+
+## Interactive ROI Viewer
+
+```text
+src/roi_viewer.py
+```
+
+Provides an interactive ROI selection interface inside Jupyter Notebook.
+
+---
+
+## Image Feature Extraction
+
+```text
+src/image_features.py
+```
+
+Extracts RGB, saturation, blue/red ratio, and contrast features from selected ROIs.
+
+---
+
+## PM2.5 Data Download
+
+```bash
+python src/eea_pm25_download.py
+```
+
+Downloads and filters hourly PM2.5 observations from the EEA API.
+
+---
+
+## ERA5 Meteorological Data Download
+
+```bash
+python src/era5_download.py
+```
+
+Downloads ERA5 single-level and pressure-level meteorological variables from CDS.
+
+---
+
+## ARPA Weather Data Integration
+
+```bash
+python src/merge_arpa_data.py
+```
+
+Merges multiple ARPA Lombardia weather station CSV files.
+
+---
+
+## Multi-Source Dataset Integration
+
+```bash
+python src/merge_all_data.py
+```
+
+Integrates webcam features, PM2.5 observations, ERA5 data, and ARPA weather station data using UTC hourly timestamps.
+
+---
+
+# Technologies Used
+
+- Python
+- Pandas
+- NumPy
+- Matplotlib
+- Pillow (PIL)
+- Xarray
+- CDS API
+- Requests
+- Jupyter Notebook
+
+---
+
+# Dataset Applications
+
+The generated dataset can support:
+
+- PM2.5 prediction models
+- Air quality monitoring
+- Environmental analysis
+- Urban climate studies
+- Computer vision research
+- Machine learning workflows
+- Air pollution forecasting
+
+---
+
+# Future Improvements
+
+Possible future extensions include:
+
+- Deep learning PM2.5 prediction
+- Real-time webcam processing
+- Satellite remote sensing integration
+- Additional meteorological variables
+- Multi-city support
+- Automated visualization dashboards
+
+---
+
+# Authors
+
+- Tuo Qingxuan— Politecnico di Milano
+- Zhang Zihao — Politecnico di Milano
+
+GeoInformatics Project
+
+---
+
+# License
+
+This project is intended for academic and research purposes only.
