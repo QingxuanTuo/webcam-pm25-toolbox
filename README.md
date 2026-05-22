@@ -18,7 +18,7 @@ Webcam Image Collection
         ↓
 ROI Selection
         ↓
-Image Feature Extraction
+ROI-Based Image Feature Extraction
         ↓
 PM2.5 Download
         ↓
@@ -58,46 +58,18 @@ data/interim/merged_dataset.csv
 ```
 
 ---
+
 ## 02_Dataset Cleaning and Preprocessing.ipynb
 
-This notebook performs dataset profiling, data quality assessment, cleaning, validation, and feature engineering to generate the final machine-learning-ready dataset.
+This notebook performs:
 
-Input dataset:
-
-```text
-data/interim/merged_dataset.csv
-```
-
-Main processing steps include:
-
-- Dataset structure analysis
+- Data profiling
 - Missing-value analysis
-- Temporal coverage checking
-- Duplicate timestamp detection
-- Invalid physical-value detection
-- IQR-based outlier analysis
-- Missing-value interpolation
-- Datetime conversion
-- Chronological sorting
-- Duplicate removal
-- Numeric type conversion
+- Duplicate timestamp checking
+- Outlier analysis
+- Data cleaning
 - Feature engineering
 - Dataset validation
-- Correlation analysis and visualization
-
-Generated features include:
-
-```text
-hour
-day
-weekday
-month
-hour_sin
-hour_cos
-is_daytime
-wind_dir_sin
-wind_dir_cos
-```
 
 Main output:
 
@@ -114,12 +86,6 @@ Missing values: 0
 Duplicate timestamps: 0
 ```
 
-The final dataset is fully cleaned, temporally aligned, and ready for:
-
-- PM2.5 prediction
-- Environmental analysis
-- Machine learning workflows
-- Urban air-quality studies
 ---
 
 # Webcam Image Collection
@@ -153,6 +119,144 @@ Upload images to Google Drive
 ```
 
 Downloaded images are later used for ROI-based image feature extraction.
+
+---
+
+# ROI-Based Image Feature Extraction
+
+Webcam image features are extracted using:
+
+```text
+src/image_features.py
+```
+
+The script extracts visual features from a predefined Region of Interest (ROI) selected from Milan webcam images.
+
+The ROI is configured using:
+
+```text
+config/roi.json
+```
+
+and selected interactively inside:
+
+```text
+01_Webcam-Based PM2.5 Dataset Pipeline.ipynb
+```
+
+---
+
+## Extracted Features
+
+The extracted image features include:
+
+```text
+R_roi
+G_roi
+B_roi
+S_mean
+B_R_ratio
+contrast
+```
+
+Feature descriptions:
+
+| Feature | Description |
+|---|---|
+| R_roi | Mean red-channel intensity |
+| G_roi | Mean green-channel intensity |
+| B_roi | Mean blue-channel intensity |
+| S_mean | Mean saturation in HSV space |
+| B_R_ratio | Blue-to-red ratio |
+| contrast | Standard deviation of grayscale intensity |
+
+---
+
+## Processing Workflow
+
+The feature extraction workflow includes:
+
+```text
+Load webcam image
+        ↓
+Crop ROI region
+        ↓
+Convert RGB image
+        ↓
+Compute RGB mean values
+        ↓
+Compute saturation
+        ↓
+Compute blue/red ratio
+        ↓
+Compute image contrast
+        ↓
+Parse timestamp from filename
+        ↓
+Convert Europe/Rome time to UTC
+        ↓
+Export feature table
+```
+
+---
+
+## Timestamp Processing
+
+Image timestamps are automatically parsed from filenames using the format:
+
+```text
+YYYYMMDD-HHMM.jpg
+```
+
+Example:
+
+```text
+20260301-0400.jpg
+```
+
+The script converts timestamps from:
+
+```text
+Europe/Rome
+```
+
+to:
+
+```text
+UTC
+```
+
+to ensure temporal consistency with PM2.5, ERA5, and ARPA datasets.
+
+---
+
+## Output Dataset
+
+Output file:
+
+```text
+data/interim/image_features.csv
+```
+
+Generated fields:
+
+```text
+datetime
+R_roi
+G_roi
+B_roi
+S_mean
+B_R_ratio
+contrast
+image_path
+```
+
+Project result:
+
+```text
+Rows: 220
+Skipped files: 0
+```
 
 ---
 
@@ -324,6 +428,133 @@ The merged dataset contains:
 
 ---
 
+# Dataset Cleaning and Feature Engineering
+
+The integrated dataset is further processed using:
+
+```text
+02_Dataset Cleaning and Preprocessing.ipynb
+```
+
+Input dataset:
+
+```text
+data/interim/merged_dataset.csv
+```
+
+Final output:
+
+```text
+data/processed/final_dataset.csv
+```
+
+---
+
+## Data Profiling
+
+The notebook analyzes:
+
+- Dataset structure
+- Missing values
+- Temporal coverage
+- Timestamp continuity
+- Numerical distributions
+- Correlation structure
+
+Visualization includes:
+
+- Missing-value matrix
+- Histograms
+- Correlation heatmaps
+- Boxplots
+- PM2.5 time-series plots
+
+---
+
+## Data Quality Assessment
+
+The workflow checks:
+
+- Missing values
+- Duplicate rows
+- Duplicate timestamps
+- Invalid physical values
+- Outliers using the IQR method
+- Temporal consistency
+
+Examples of validation rules include:
+
+- PM2.5 ≥ 0
+- Relative humidity between 0–100
+- Total cloud cover between 0–1
+- Wind speed ≥ 0
+
+---
+
+## Data Cleaning
+
+Cleaning operations include:
+
+- Datetime conversion
+- Chronological sorting
+- Linear interpolation of missing values
+- Wind-direction filling
+- Invalid-value filtering
+- Duplicate removal
+- Numeric type conversion
+- Removal of non-modeling columns
+
+Removed columns:
+
+```text
+image_path
+Unit
+```
+
+---
+
+## Feature Engineering
+
+Additional temporal and cyclical features are generated, including:
+
+```text
+hour
+day
+weekday
+month
+hour_sin
+hour_cos
+is_daytime
+wind_dir_sin
+wind_dir_cos
+```
+
+These features improve the representation of:
+
+- Daily atmospheric cycles
+- Illumination conditions
+- Wind-direction periodicity
+
+---
+
+## Final Dataset Characteristics
+
+```text
+Rows: 220
+Columns: 41
+Missing values: 0
+Duplicate timestamps: 0
+```
+
+The final dataset is ready for:
+
+- PM2.5 prediction
+- Environmental analysis
+- Machine learning workflows
+- Urban air-quality studies
+
+---
+
 # Output Datasets
 
 Main generated datasets:
@@ -344,7 +575,7 @@ data/processed/final_dataset.csv
 Clone the repository:
 
 ```bash
-git clone https://github.com/QingxuanTuo/webcam-pm25-toolbox
+git clone https://github.com/QingxuanTuo/webcam-pm25-toolbox.git
 cd webcam-pm25-toolbox
 ```
 
@@ -391,18 +622,3 @@ beautifulsoup4
 cdsapi
 imageio
 ```
-
----
-
-# Authors
-
-- Tuo Qingxuan — Politecnico di Milano
-- Zhang Zihao — Politecnico di Milano
-
-GeoInformatics Project
-
----
-
-# License
-
-This project is intended for academic and research purposes only.
