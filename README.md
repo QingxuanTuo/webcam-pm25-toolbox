@@ -92,7 +92,7 @@ Sensitive credentials (e.g., rclone configuration) are securely stored using Git
 
 ## Overview
 
-This notebook (`eea_pm25_downloader.ipynb`) provides a complete workflow for downloading and preprocessing hourly PM2.5 data from the European Environment Agency (EEA) Air Quality e-Reporting database.
+This code (`eea_pm25_downloader.py`) provides a complete workflow for downloading and preprocessing hourly PM2.5 data from the European Environment Agency (EEA) Air Quality e-Reporting database.
 
 The notebook automatically downloads air quality data for Milan, filters the data for a specific monitoring station, restricts the data to a selected time range, and exports a clean CSV file for further analysis and modelling.
 
@@ -128,7 +128,7 @@ This station was selected because it provides consistent hourly PM2.5 measuremen
 
 ## Workflow Description
 
-The notebook performs the following steps:
+The code performs the following steps:
 
 1. Define download parameters (country, city, pollutant, time range).
 2. Send a request to the EEA API and retrieve parquet file URLs.
@@ -167,15 +167,6 @@ This CSV file contains the following fields:
 The `Start` column represents the start time of each hourly measurement interval.
 
 ---
-
-## How to Use
-
-1. Open `eea_pm25_downloader.ipynb`
-2. Modify the time range in the parameter section:
-
-        api_start = "YYYY-MM-DDTHH:MM:SSZ"
-        api_end   = "YYYY-MM-DDTHH:MM:SSZ"
-
 
 # 03 ERA5 Meteorological Data Collection and Processing
 
