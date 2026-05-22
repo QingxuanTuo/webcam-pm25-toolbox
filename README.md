@@ -77,18 +77,46 @@ Main output:
 data/processed/final_dataset.csv
 ```
 
-Final dataset characteristics:
+---
 
-```text
-Rows: 220
-Columns: 41
-Missing values: 0
-Duplicate timestamps: 0
+# Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/QingxuanTuo/webcam-pm25-toolbox.git
+cd webcam-pm25-toolbox
+```
+
+Create virtual environment:
+
+```bash
+python -m venv .venv
+```
+
+Activate environment:
+
+Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+Linux/macOS:
+
+```bash
+source .venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
 ```
 
 ---
 
-# Webcam Image Collection
+# （1）Webcam Image Collection
 
 Webcam images are automatically collected from:
 
@@ -122,7 +150,7 @@ Downloaded images are later used for ROI-based image feature extraction.
 
 ---
 
-# ROI-Based Image Feature Extraction
+# （2）ROI-Based Image Feature Extraction
 
 Webcam image features are extracted using:
 
@@ -159,76 +187,8 @@ B_R_ratio
 contrast
 ```
 
-Feature descriptions:
-
-| Feature | Description |
-|---|---|
-| R_roi | Mean red-channel intensity |
-| G_roi | Mean green-channel intensity |
-| B_roi | Mean blue-channel intensity |
-| S_mean | Mean saturation in HSV space |
-| B_R_ratio | Blue-to-red ratio |
-| contrast | Standard deviation of grayscale intensity |
-
 ---
 
-## Processing Workflow
-
-The feature extraction workflow includes:
-
-```text
-Load webcam image
-        ↓
-Crop ROI region
-        ↓
-Convert RGB image
-        ↓
-Compute RGB mean values
-        ↓
-Compute saturation
-        ↓
-Compute blue/red ratio
-        ↓
-Compute image contrast
-        ↓
-Parse timestamp from filename
-        ↓
-Convert Europe/Rome time to UTC
-        ↓
-Export feature table
-```
-
----
-
-## Timestamp Processing
-
-Image timestamps are automatically parsed from filenames using the format:
-
-```text
-YYYYMMDD-HHMM.jpg
-```
-
-Example:
-
-```text
-20260301-0400.jpg
-```
-
-The script converts timestamps from:
-
-```text
-Europe/Rome
-```
-
-to:
-
-```text
-UTC
-```
-
-to ensure temporal consistency with PM2.5, ERA5, and ARPA datasets.
-
----
 
 ## Output Dataset
 
@@ -238,40 +198,15 @@ Output file:
 data/interim/image_features.csv
 ```
 
-Generated fields:
-
-```text
-datetime
-R_roi
-G_roi
-B_roi
-S_mean
-B_R_ratio
-contrast
-image_path
-```
-
-Project result:
-
-```text
-Rows: 220
-Skipped files: 0
-```
 
 ---
 
-# PM2.5 Data Download
+# （3）PM2.5 Data Download
 
 Hourly PM2.5 observations are downloaded from the European Environment Agency (EEA) using:
 
 ```text
 src/eea_pm25_download.py
-```
-
-Selected monitoring station:
-
-```text
-IT/SPO.IT0477A_6001_BETA
 ```
 
 Output dataset:
@@ -282,7 +217,7 @@ data/interim/PM25_MI_hourly.csv
 
 ---
 
-# ERA5 Meteorological Data
+# （4）ERA5 Meteorological Data
 
 ERA5 meteorological data are downloaded and processed using:
 
@@ -295,28 +230,6 @@ The workflow downloads:
 - ERA5 single-level variables
 - ERA5 pressure-level variables
 
-Main variables include:
-
-- T2M
-- D2M
-- RH
-- U10
-- V10
-- SP
-- TP
-- BLH
-- TCC
-- CBH
-- WS10
-- GP_500
-- GP_850
-- T_500
-- T_850
-- U_500
-- U_850
-- V_500
-- V_850
-
 Output dataset:
 
 ```text
@@ -325,7 +238,7 @@ data/interim/era5_all_merged.csv
 
 ---
 
-# ERA5 CDS API Configuration
+## ERA5 CDS API Configuration
 
 ERA5 download requires a Copernicus Climate Data Store account.
 
@@ -358,7 +271,7 @@ key: YOUR_UID:YOUR_API_KEY
 
 ---
 
-# ARPA Meteorological Data
+# （5）ARPA Meteorological Data
 
 Ground meteorological observations are obtained from ARPA Lombardia:
 
@@ -369,23 +282,13 @@ https://www.arpalombardia.it/temi-ambientali/meteo-e-clima/form-richiesta-dati
 Selected station:
 
 ```text
-Milano - v. Juvara
+Milano - v. Marche
 ```
 
 ARPA CSV tables are merged using:
 
 ```text
 src/merge_arpa_data.py
-```
-
-Merged variables include:
-
-```text
-temperature_mean
-wind_direction_mean
-relative_humidity_mean
-wind_speed_mean
-wind_gust_max
 ```
 
 Output dataset:
@@ -396,7 +299,7 @@ data/interim/arpa_merged.csv
 
 ---
 
-# Multi-source Dataset Integration
+# （6）Multi-source Dataset Integration
 
 All datasets are merged by UTC hourly timestamp using:
 
@@ -428,7 +331,7 @@ The merged dataset contains:
 
 ---
 
-# Dataset Cleaning and Feature Engineering
+# （7）Dataset Cleaning and Feature Engineering
 
 The integrated dataset is further processed using:
 
@@ -482,13 +385,6 @@ The workflow checks:
 - Outliers using the IQR method
 - Temporal consistency
 
-Examples of validation rules include:
-
-- PM2.5 ≥ 0
-- Relative humidity between 0–100
-- Total cloud cover between 0–1
-- Wind speed ≥ 0
-
 ---
 
 ## Data Cleaning
@@ -503,13 +399,6 @@ Cleaning operations include:
 - Duplicate removal
 - Numeric type conversion
 - Removal of non-modeling columns
-
-Removed columns:
-
-```text
-image_path
-Unit
-```
 
 ---
 
@@ -529,30 +418,6 @@ wind_dir_sin
 wind_dir_cos
 ```
 
-These features improve the representation of:
-
-- Daily atmospheric cycles
-- Illumination conditions
-- Wind-direction periodicity
-
----
-
-## Final Dataset Characteristics
-
-```text
-Rows: 220
-Columns: 41
-Missing values: 0
-Duplicate timestamps: 0
-```
-
-The final dataset is ready for:
-
-- PM2.5 prediction
-- Environmental analysis
-- Machine learning workflows
-- Urban air-quality studies
-
 ---
 
 # Output Datasets
@@ -568,57 +433,5 @@ data/interim/merged_dataset.csv
 data/processed/final_dataset.csv
 ```
 
----
 
-# Installation
 
-Clone the repository:
-
-```bash
-git clone https://github.com/QingxuanTuo/webcam-pm25-toolbox.git
-cd webcam-pm25-toolbox
-```
-
-Create virtual environment:
-
-```bash
-python -m venv .venv
-```
-
-Activate environment:
-
-Windows:
-
-```bash
-.venv\Scripts\activate
-```
-
-Linux/macOS:
-
-```bash
-source .venv/bin/activate
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-# Main Third-Party Python Libraries
-
-```text
-pandas
-numpy
-matplotlib
-pillow
-xarray
-requests
-ipywidgets
-jupyter
-beautifulsoup4
-cdsapi
-imageio
-```
