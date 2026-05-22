@@ -1,4 +1,4 @@
-# Webcam-Based PM2.5 Dataset Generation and Multi-Source Environmental Data Fusion
+# Python Toolbox for Collection and Preprocessing of Webcam Imagery and PM2.5 Data
 
 This project constructs a webcam-based PM2.5 environmental dataset by integrating:
 
