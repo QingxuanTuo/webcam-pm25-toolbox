@@ -487,55 +487,73 @@ The ground-based meteorological data used in this project are obtained from the 
 
 https://www.arpalombardia.it/temi-ambientali/meteo-e-clima/form-richiesta-dati
 
-### 1 Data Retrieval
+---
 
-Data are downloaded via the ARPA online request form with the following configuration:
+## 1. Data Retrieval
+
+Data are manually requested and downloaded from the ARPA online request platform using the following configuration:
 
 - **Station**: Milano - v. Juvara  
-- **Time range**: consistent with the study period  
 - **Temporal resolution**: Oraria (hourly)  
+- **Time range**: consistent with the study period  
 
-### 2 Selected Variables
+---
 
-The following meteorological variables relevant to air pollution analysis are selected:
+## 2. Selected Variables
+
+The selected meteorological variables include:
 
 | Variable | Description | Output Field |
-|----------|------------|--------------|
-| Precipitazione | Precipitation | Valore Cumulato |
+|----------|-------------|--------------|
 | Temperatura | Temperature | Medio |
 | Direzione Vento | Wind Direction | Medio |
 | Umidità Relativa | Relative Humidity | Medio |
-| Radiazione Globale | Global Radiation | Medio |
 | Velocità Vento | Wind Speed | Medio |
 | Raffica Velocità Vento | Wind Gust | Massimo |
 
-### 3 Data Characteristics
+---
 
-The ARPA dataset presents the following characteristics:
+## 3. Data Characteristics
 
-- Each variable is exported as a **separate CSV file**  
-- The time column is labeled as `Data-Ora`  
-- Data are provided as **hourly time series**  
-- Missing values are encoded as `-999`  
-- Wind speed and wind gust share the same `Id Sensore` (19242) and must be distinguished by the field:
-  - `Medio` → average wind speed  
-  - `Massimo` → wind gust (maximum)
-  - 
-### 4 ARPA Data Merging
+The ARPA dataset has the following characteristics:
 
-Since ARPA data are stored separately by variable, a horizontal merge is required:
+- Each variable is exported as a separate CSV file
+- The time column is labeled as `Data-Ora`
+- Data are provided as hourly time series
+- Missing values are encoded as `-999`
+- Wind speed and wind gust may share the same `Id Sensore` and are distinguished by:
+  - `Medio` → average wind speed
+  - `Massimo` → wind gust
 
-- Use `Data-Ora` as the primary key  
-- Perform time-aligned merging (outer join) across the 7 CSV files  
-- Rename variables using consistent semantic naming:
+---
 
-precipitation_cumulative
+## 4. ARPA Data Merging
+
+Since ARPA data are stored separately by variable, the tables must be merged into a unified dataset.
+
+The merging workflow:
+
+- Uses `Data-Ora` as the primary time key
+- Performs time-aligned merging across multiple CSV files
+- Replaces invalid values (`-999`) with missing values
+- Converts local timestamps to UTC
+- Renames variables using consistent semantic naming
+
+Final merged variables include:
+
+```text
 temperature_mean
 wind_direction_mean
 relative_humidity_mean
-global_radiation_mean
 wind_speed_mean
 wind_gust_max
+```
+
+Output:
+
+```text
+arpa_merged.csv
+```
 
 # 07 Data Integration and Preprocessing
 
