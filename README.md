@@ -172,8 +172,6 @@ and selected interactively inside:
 01_Webcam-Based PM2.5 Dataset Pipeline.ipynb
 ```
 
----
-
 ## Extracted Features
 
 The extracted image features include:
@@ -187,9 +185,6 @@ B_R_ratio
 contrast
 ```
 
----
-
-
 ## Output Dataset
 
 Output file:
@@ -197,7 +192,6 @@ Output file:
 ```text
 data/interim/image_features.csv
 ```
-
 
 ---
 
@@ -235,8 +229,6 @@ Output dataset:
 ```text
 data/interim/era5_all_merged.csv
 ```
-
----
 
 ## ERA5 CDS API Configuration
 
@@ -351,7 +343,6 @@ Final output:
 data/processed/final_dataset.csv
 ```
 
----
 
 ## Data Profiling
 
@@ -372,7 +363,6 @@ Visualization includes:
 - Boxplots
 - PM2.5 time-series plots
 
----
 
 ## Data Quality Assessment
 
@@ -384,8 +374,6 @@ The workflow checks:
 - Invalid physical values
 - Outliers using the IQR method
 - Temporal consistency
-
----
 
 ## Data Cleaning
 
@@ -400,7 +388,6 @@ Cleaning operations include:
 - Numeric type conversion
 - Removal of non-modeling columns
 
----
 
 ## Feature Engineering
 
@@ -417,8 +404,6 @@ is_daytime
 wind_dir_sin
 wind_dir_cos
 ```
-
----
 
 # Output Datasets
 
