@@ -1,38 +1,92 @@
-# Webcam-Based PM2.5 Environmental Data Processing Framework
+# Webcam-Based PM2.5 Environmental Data Toolbox
 
-This project constructs a webcam-based PM2.5 environmental dataset by integrating:
+### An Automated Framework for Multi-Source Dataset Generation and Environmental Data Integration
+
+This repository provides a Python-based environmental data processing toolbox for constructing webcam-based PM2.5 datasets through multi-source environmental data integration.
+
+The framework integrates:
 
 - Webcam image features
 - PM2.5 air quality observations
 - ERA5 meteorological reanalysis data
 - ARPA Lombardia ground meteorological observations
 
-The project provides a reproducible workflow for multi-source environmental data collection, preprocessing, integration, and dataset generation for air quality analysis and machine learning applications.
+The project provides a reproducible workflow for environmental data collection, preprocessing, harmonization, and analysis-ready dataset generation for PM2.5 analysis and machine learning applications.
 
 ---
 
 # Overall Workflow
 
-```text
-Webcam Image Collection
-        ↓
-ROI Selection
-        ↓
-ROI-Based Image Feature Extraction
-        ↓
-PM2.5 Download
-        ↓
-ERA5 Meteorological Data Download
-        ↓
-ARPA Meteorological Data Merge
-        ↓
-Multi-source Dataset Integration
-        ↓
-Dataset Cleaning & Feature Engineering
-        ↓
-Final Dataset Generation
-```
+```mermaid
+flowchart LR
 
+    %% Data Sources
+    A[📷 Webcam Images]
+    B[🌫️ PM2.5 Data]
+    C[☁️ ERA5 Data]
+    D[🌦️ ARPA Data]
+
+    %% Image Workflow
+    E[ROI Selection]
+    F[Feature Extraction]
+
+    %% Processing
+    G[Environmental Processing]
+
+    %% Integration
+    H[Dataset Integration]
+    I[Cleaning & Feature Engineering]
+    J[Final Dataset]
+
+    %% Connections
+    A --> E --> F --> H
+
+    B --> G
+    C --> G
+    D --> G
+
+    G --> H
+
+    H --> I --> J
+
+    %% Styling
+    classDef source fill:#EEF4FF,stroke:#4A78C2,color:#1B2A4A,stroke-width:1.5px;
+    classDef process fill:#F4FFF4,stroke:#4C9A5A,color:#1F3A28,stroke-width:1.5px;
+    classDef output fill:#FFF4E5,stroke:#D97706,color:#5B3A00,stroke-width:1.5px;
+
+    class A,B,C,D source;
+    class E,F,G,H,I process;
+    class J output;
+```
+---
+# Repository Structure
+
+```text
+webcam-pm25-toolbox/
+├── .github/workflows/
+│   └── webcam.yml
+├── config/
+│   └── roi.json
+├── data/
+│   ├── raw/
+│   ├── interim/
+│   └── processed/
+├── notebooks/
+│   ├── 01_Webcam-Based pm25 Dataset Pipeline.ipynb
+│   └── 02_Dataset Cleaning and Preprocessing.ipynb
+├── src/
+│   ├── __init__.py
+│   ├── webcam_download.py
+│   ├── roi_viewer.py
+│   ├── image_features.py
+│   ├── eea_pm25_download.py
+│   ├── era5_download.py
+│   ├── merge_arpa_data.py
+│   └── merge_all_data.py
+├── reports/
+├── requirements.txt
+└── README.md
+```
 ---
 
 # Main Notebooks
@@ -113,7 +167,26 @@ Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
+---
+# Quick Start
 
+Launch Jupyter Notebook:
+
+```bash
+jupyter notebook
+```
+
+Run the complete environmental data pipeline:
+
+```text
+notebooks/01_webcam_pm25_dataset_pipeline.ipynb
+```
+
+Then perform dataset cleaning and preprocessing:
+
+```text
+notebooks/02_dataset_cleaning_preprocessing.ipynb
+```
 ---
 
 # （1）Webcam Image Collection
