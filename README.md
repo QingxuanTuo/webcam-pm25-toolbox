@@ -84,7 +84,6 @@ webcam-pm25-toolbox/
 │   ├── era5_download.py
 │   ├── merge_arpa_data.py
 │   └── merge_all_data.py
-├── reports/
 ├── requirements.txt
 └── README.md
 ```
