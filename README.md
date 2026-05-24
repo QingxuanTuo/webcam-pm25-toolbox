@@ -88,51 +88,6 @@ webcam-pm25-toolbox/
 └── README.md
 ```
 ---
-
-# Main Notebooks
-
-## 01_Webcam-Based PM2.5 Dataset Pipeline.ipynb
-
-This notebook implements the complete workflow for constructing the integrated environmental dataset.
-
-Main workflow:
-
-- Webcam image loading
-- ROI selection
-- ROI-based image feature extraction
-- PM2.5 data download
-- ERA5 meteorological data download and processing
-- ARPA meteorological data merging
-- Multi-source dataset integration
-
-Main output:
-
-```text
-data/interim/merged_dataset.csv
-```
-
----
-
-## 02_Dataset Cleaning and Preprocessing.ipynb
-
-This notebook performs:
-
-- Data profiling
-- Missing-value analysis
-- Duplicate timestamp checking
-- Outlier analysis
-- Data cleaning
-- Feature engineering
-- Dataset validation
-
-Main output:
-
-```text
-data/processed/final_dataset.csv
-```
-
----
-
 # Installation
 
 Clone the repository:
@@ -142,170 +97,30 @@ git clone https://github.com/QingxuanTuo/webcam-pm25-toolbox.git
 cd webcam-pm25-toolbox
 ```
 
-Create virtual environment:
-
-```bash
-python -m venv .venv
-```
-
-Activate environment:
-
-Windows:
-
-```bash
-.venv\Scripts\activate
-```
-
-Linux/macOS:
-
-```bash
-source .venv/bin/activate
-```
-
 Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
----
-# Quick Start
 
-Launch Jupyter Notebook:
+The project can be executed either:
 
-```bash
-jupyter notebook
-```
+- locally using Jupyter Notebook;
+- or directly in Google Colab.
 
-Run the complete environmental data pipeline:
+For local execution, webcam images stored in Google Drive should be downloaded into:
 
 ```text
-notebooks/01_webcam_pm25_dataset_pipeline.ipynb
+data/raw/images
 ```
 
-Then perform dataset cleaning and preprocessing:
-
-```text
-notebooks/02_dataset_cleaning_preprocessing.ipynb
-```
----
-
-# （1）Webcam Image Collection
-
-Webcam images are automatically collected from:
-
-```text
-https://www.meteogiuliacci.it/meteo-webcam/webcam-milano
-```
-
-using:
-
-```text
-src/webcam_download.py
-```
-
-The collection workflow is automated using GitHub Actions.
-
-Pipeline overview:
-
-```text
-GitHub Actions
-        ↓
-Execute webcam_download.py
-        ↓
-Download Milan webcam images
-        ↓
-Save images locally
-        ↓
-Upload images to Google Drive
-```
-
-Downloaded images are later used for ROI-based image feature extraction.
+before running the notebooks.
 
 ---
-
-# （2）ROI-Based Image Feature Extraction
-
-Webcam image features are extracted using:
-
-```text
-src/image_features.py
-```
-
-The script extracts visual features from a predefined Region of Interest (ROI) selected from Milan webcam images.
-
-The ROI is configured using:
-
-```text
-config/roi.json
-```
-
-and selected interactively inside:
-
-```text
-01_Webcam-Based PM2.5 Dataset Pipeline.ipynb
-```
-
-## Extracted Features
-
-The extracted image features include:
-
-```text
-R_roi
-G_roi
-B_roi
-S_mean
-B_R_ratio
-contrast
-```
-
-## Output Dataset
-
-Output file:
-
-```text
-data/interim/image_features.csv
-```
-
----
-
-# （3）PM2.5 Data Download
-
-Hourly PM2.5 observations are downloaded from the European Environment Agency (EEA) using:
-
-```text
-src/eea_pm25_download.py
-```
-
-Output dataset:
-
-```text
-data/interim/PM25_MI_hourly.csv
-```
-
----
-
-# （4）ERA5 Meteorological Data
-
-ERA5 meteorological data are downloaded and processed using:
-
-```text
-src/era5_download.py
-```
-
-The workflow downloads:
-
-- ERA5 single-level variables
-- ERA5 pressure-level variables
-
-Output dataset:
-
-```text
-data/interim/era5_all_merged.csv
-```
 
 ## ERA5 CDS API Configuration
 
-ERA5 download requires a Copernicus Climate Data Store account.
+ERA5 downloading requires a Copernicus Climate Data Store (CDS) account.
 
 Register at:
 
@@ -313,7 +128,7 @@ Register at:
 https://cds.climate.copernicus.eu/
 ```
 
-Create the `.cdsapirc` file in your home directory.
+Create a `.cdsapirc` file in your home directory.
 
 Windows:
 
@@ -333,152 +148,91 @@ Example configuration:
 url: https://cds.climate.copernicus.eu/api
 key: YOUR_UID:YOUR_API_KEY
 ```
+---
+# Automated Webcam Collection
+
+Webcam images are automatically collected from the Milan webcam platform using a scheduled GitHub Actions workflow.
+
+The automation pipeline is defined in:
+
+```text
+.github/workflows/webcam.yml
+```
+
+and implemented using:
+
+```text
+src/webcam_download.py
+```
+
+The workflow performs:
+
+- automated webcam image downloading;
+- timestamp-based image organization;
+- and automatic upload to Google Drive.
+
+The automated workflow can be triggered directly from the GitHub Actions tab:
+
+```text
+Actions → webcam → Run workflow
+```
+The pipeline enables continuous and reproducible long-term environmental image collection without requiring manual notebook execution.
+
+---
+# Quick Start
+
+Run the notebooks in the following order.
 
 ---
 
-# （5）ARPA Meteorological Data
+## 1. Main Environmental Data Pipeline
 
-Ground meteorological observations are obtained from ARPA Lombardia:
-
-```text
-https://www.arpalombardia.it/temi-ambientali/meteo-e-clima/form-richiesta-dati
-```
-
-Selected station:
+Run:
 
 ```text
-Milano - v. Marche
+notebooks/01_Webcam-Based pm25 Dataset Pipeline.ipynb
 ```
 
-ARPA CSV tables are merged using:
+This notebook performs:
 
-```text
-src/merge_arpa_data.py
-```
+- ROI selection and visual analysis
+- ROI-based image feature extraction
+- PM2.5 data downloading
+- ERA5 meteorological data processing
+- ARPA Lombardia data merging
+- Multi-source dataset integration
 
-Output dataset:
-
-```text
-data/interim/arpa_merged.csv
-```
-
----
-
-# （6）Multi-source Dataset Integration
-
-All datasets are merged by UTC hourly timestamp using:
-
-```text
-src/merge_all_data.py
-```
-
-Integrated datasets:
-
-```text
-image_features.csv
-PM25_MI_hourly.csv
-era5_all_merged.csv
-arpa_merged.csv
-```
-
-Output dataset:
+Main output:
 
 ```text
 data/interim/merged_dataset.csv
 ```
 
-The merged dataset contains:
-
-- Webcam ROI image features
-- PM2.5 observations
-- ERA5 meteorological variables
-- ARPA ground meteorological variables
-
 ---
 
-# （7）Dataset Cleaning and Feature Engineering
+## 2. Dataset Cleaning and Preprocessing
 
-The integrated dataset is further processed using:
-
-```text
-02_Dataset Cleaning and Preprocessing.ipynb
-```
-
-Input dataset:
+Run:
 
 ```text
-data/interim/merged_dataset.csv
+notebooks/02_Dataset Cleaning and Preprocessing.ipynb
 ```
 
-Final output:
+This notebook performs:
+
+- dataset cleaning
+- missing-value handling
+- feature engineering
+- temporal validation
+- final dataset generation
+
+Main output:
 
 ```text
 data/processed/final_dataset.csv
 ```
-
-
-## Data Profiling
-
-The notebook analyzes:
-
-- Dataset structure
-- Missing values
-- Temporal coverage
-- Timestamp continuity
-- Numerical distributions
-- Correlation structure
-
-Visualization includes:
-
-- Missing-value matrix
-- Histograms
-- Correlation heatmaps
-- Boxplots
-- PM2.5 time-series plots
-
-
-## Data Quality Assessment
-
-The workflow checks:
-
-- Missing values
-- Duplicate rows
-- Duplicate timestamps
-- Invalid physical values
-- Outliers using the IQR method
-- Temporal consistency
-
-## Data Cleaning
-
-Cleaning operations include:
-
-- Datetime conversion
-- Chronological sorting
-- Linear interpolation of missing values
-- Wind-direction filling
-- Invalid-value filtering
-- Duplicate removal
-- Numeric type conversion
-- Removal of non-modeling columns
-
-
-## Feature Engineering
-
-Additional temporal and cyclical features are generated, including:
-
-```text
-hour
-day
-weekday
-month
-hour_sin
-hour_cos
-is_daytime
-wind_dir_sin
-wind_dir_cos
-```
-
-# Output Datasets
+---
+# Generated Datasets
 
 Main generated datasets:
 
@@ -491,5 +245,16 @@ data/interim/merged_dataset.csv
 data/processed/final_dataset.csv
 ```
 
+Dataset description:
 
+| Dataset | Description |
+|---|---|
+| image_features.csv | ROI-based image-derived visual features |
+| PM25_MI_hourly.csv | Hourly PM2.5 observations from the EEA station |
+| era5_all_merged.csv | Processed ERA5 meteorological variables |
+| arpa_merged.csv | ARPA Lombardia environmental observations |
+| merged_dataset.csv | Multi-source integrated environmental dataset |
+| final_dataset.csv | Cleaned and analysis-ready final dataset |
 
+---
+This toolbox provides a reproducible environmental data processing workflow for webcam-based PM2.5 analysis and future machine learning applications.
