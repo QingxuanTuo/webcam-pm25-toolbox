@@ -72,8 +72,8 @@ webcam-pm25-toolbox/
 │   ├── interim/
 │   └── processed/
 ├── notebooks/
-│   ├── 01_Webcam-Based pm25 Dataset Pipeline.ipynb
-│   └── 02_Dataset Cleaning and Preprocessing.ipynb
+│   ├── 01_webcam_pm25_dataset_pipeline.ipynb
+│   └── 02_dataset_cleaning_preprocessing.ipynb
 ├── src/
 │   ├── __init__.py
 │   ├── webcam_download.py
@@ -190,7 +190,7 @@ Run the notebooks in the following order.
 Run:
 
 ```text
-notebooks/01_Webcam-Based pm25 Dataset Pipeline.ipynb
+notebooks/01_webcam_pm25_dataset_pipeline.ipynb
 ```
 
 This notebook performs:
@@ -215,7 +215,7 @@ data/interim/merged_dataset.csv
 Run:
 
 ```text
-notebooks/02_Dataset Cleaning and Preprocessing.ipynb
+notebooks/02_dataset_cleaning_preprocessing.ipynb
 ```
 
 This notebook performs:
