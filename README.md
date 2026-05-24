@@ -71,6 +71,7 @@ webcam-pm25-toolbox/
 │   ├── raw/
 │   ├── interim/
 │   └── processed/
+├── docs/
 ├── notebooks/
 │   ├── 01_webcam_pm25_dataset_pipeline.ipynb
 │   └── 02_dataset_cleaning_preprocessing.ipynb
