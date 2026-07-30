@@ -70,41 +70,70 @@ def merge_all_datasets(
     merged_all = merged_all.sort_values("time").reset_index(drop=True)
 
     column_order = [
-        "time",
-        "R_roi",
-        "G_roi",
-        "B_roi",
-        "S_mean",
-        "B_R_ratio",
-        "contrast",
-        "image_path",
-        "PM25",
-        "Unit",
-        "T2M",
-        "D2M",
-        "RH",
-        "U10",
-        "V10",
-        "SP",
-        "TP",
-        "BLH",
-        "TCC",
-        "CBH",
-        "WS10",
-        "GP_500",
-        "GP_850",
-        "T_500",
-        "T_850",
-        "U_500",
-        "U_850",
-        "V_500",
-        "V_850",
-        "temperature_mean",
-        "wind_direction_mean",
-        "relative_humidity_mean",
-        "wind_speed_mean",
-        "wind_gust_max",
-    ]
+    # Time
+    "time",
+
+    # Image features: color and brightness
+    "R_roi",
+    "G_roi",
+    "B_roi",
+    "R_std",
+    "G_std",
+    "B_std",
+    "S_mean",
+    "V_mean",
+    "colorfulness",
+    "sky_brightness",
+
+    # Image features: contrast and texture
+    "contrast",
+    "gray_entropy",
+    "laplacian_variance",
+    "mean_gradient_magnitude",
+    "local_contrast",
+
+    # Image features: haze and visibility
+    "B_R_ratio",
+    "dark_pixel_ratio",
+    "sky_luminance_gradient",
+
+    # Image path
+    "image_path",
+
+    # PM2.5
+    "PM25",
+    "Unit",
+
+    # ERA5 single-level variables
+    "T2M",
+    "D2M",
+    "RH",
+    "U10",
+    "V10",
+    "SP",
+    "TP",
+    "BLH",
+    "TCC",
+    "CBH",
+    "WS10",
+
+    # ERA5 pressure-level variables
+    "GP_500",
+    "GP_850",
+    "T_500",
+    "T_850",
+    "U_500",
+    "U_850",
+    "V_500",
+    "V_850",
+
+    # ARPA meteorological variables
+    "temperature_mean",
+    "wind_direction_mean",
+    "relative_humidity_mean",
+    "wind_speed_mean",
+    "wind_gust_max",
+]
 
     existing_cols = [c for c in column_order if c in merged_all.columns]
     other_cols = [c for c in merged_all.columns if c not in existing_cols]
